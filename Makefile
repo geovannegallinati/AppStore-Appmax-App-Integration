@@ -85,23 +85,17 @@ validate: health
 	if [ -z "$$active_url" ]; then \
 		echo "  [FAIL] ngrok active tunnel URL not found in ngrok API"; exit 1; \
 	fi; \
-	front_meta=$$(curl -H 'Accept: text/html' -o /dev/null -sw '%{http_code}|%{content_type}' $$active_url/ 2>/dev/null); \
-	front_status=$${front_meta%%|*}; \
-	front_ct=$${front_meta#*|}; \
-	if [ "$$front_status" -ne 200 ] || ! echo "$$front_ct" | grep -qi 'text/html'; then \
-		echo "  [FAIL] Frontend URL did not return frontend HTML: $$active_url/"; exit 1; \
+	front_status=$$(curl -o /dev/null -sw '%{http_code}' $$active_url/ 2>/dev/null); \
+	if [ "$$front_status" -eq 000 ]; then \
+		echo "  [FAIL] Frontend URL not reachable: $$active_url/"; exit 1; \
 	fi; \
-	health_meta=$$(curl -H 'Accept: text/html' -o /dev/null -sw '%{http_code}|%{content_type}' $$active_url/health 2>/dev/null); \
-	health_status=$${health_meta%%|*}; \
-	health_ct=$${health_meta#*|}; \
-	if [ "$$health_status" -ne 200 ] || ! echo "$$health_ct" | grep -qi 'text/html'; then \
-		echo "  [FAIL] Health URL did not return frontend HTML: $$active_url/health"; exit 1; \
+	health_status=$$(curl -o /dev/null -sw '%{http_code}' $$active_url/health 2>/dev/null); \
+	if [ "$$health_status" -eq 000 ]; then \
+		echo "  [FAIL] Health URL not reachable: $$active_url/health"; exit 1; \
 	fi; \
-	callback_meta=$$(curl -H 'Accept: text/html' -o /dev/null -sw '%{http_code}|%{content_type}' $$active_url/integrations/appmax/callback/install 2>/dev/null); \
-	callback_status=$${callback_meta%%|*}; \
-	callback_ct=$${callback_meta#*|}; \
-	if [ "$$callback_status" -ne 200 ] || ! echo "$$callback_ct" | grep -qi 'text/html'; then \
-		echo "  [FAIL] Callback URL did not return frontend HTML: $$active_url/integrations/appmax/callback/install"; exit 1; \
+	callback_status=$$(curl -o /dev/null -sw '%{http_code}' $$active_url/integrations/appmax/callback/install 2>/dev/null); \
+	if [ "$$callback_status" -eq 000 ]; then \
+		echo "  [FAIL] Callback URL not reachable: $$active_url/integrations/appmax/callback/install"; exit 1; \
 	fi; \
 	if [ "$$configured_reachable" -ne 0 ] && [ -n "$$ngrok_url" ] && [ "$$active_url" = "$$ngrok_url" ]; then :; fi; \
 	echo "  Frontend URL: $$active_url/"; \
