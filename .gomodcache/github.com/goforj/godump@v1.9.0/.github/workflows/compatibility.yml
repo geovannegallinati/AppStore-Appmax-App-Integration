@@ -1,0 +1,75 @@
+name: Compatibility Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run weekly on Sundays at 3 AM UTC
+    - cron: "0 3 * * 0"
+
+jobs:
+  go-versions:
+    name: Lookup Go versions
+    runs-on: ubuntu-latest
+    outputs:
+      go-mod-version: ${{ steps.versions.outputs.go-mod-version }}
+      latest: ${{ steps.versions.outputs.latest }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: arnested/go-version-action@v1
+        id: versions
+        with:
+          unstable: true # this includes the future -rc versions
+
+  go-compatibility:
+    needs: go-versions
+    name: Go ${{ matrix.go-version }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        go-version: ["${{ needs.go-versions.outputs.go-mod-version }}", "oldstable", "stable"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+          check-latest: true
+
+      - name: Run tests
+        run: go test ./... -v -race
+        timeout-minutes: 8
+
+  security:
+    name: Security Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+
+      - name: Check go.mod is tidy
+        run: |
+          go mod tidy
+          git diff --exit-code go.mod go.sum
+        timeout-minutes: 2
+
+      - name: Check for vulnerabilities
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          govulncheck ./...
+        timeout-minutes: 5

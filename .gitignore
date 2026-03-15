@@ -1,0 +1,12 @@
+.sandbox-creds.json
+.env
+*.log
+*.out
+*.cover
+*.gocache
+*.txt
+*.pid
+appmax-auth-llm-context
+docs
+*.json
+*.DS_Store

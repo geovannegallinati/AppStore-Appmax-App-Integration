@@ -1,0 +1,28 @@
+package config
+
+import (
+	"github.com/goravel/framework/facades"
+
+	cachecontract "github.com/goravel/framework/contracts/cache"
+	redisfacades  "github.com/goravel/redis/facades"
+)
+
+func init() {
+	config := facades.Config()
+	config.Add("cache", map[string]any{
+		"default": config.Env("CACHE_DRIVER", "redis"),
+		"prefix":  "appmax_checkout_",
+		"stores": map[string]any{
+			"memory": map[string]any{
+				"driver": "memory",
+			},
+			"redis": map[string]any{
+				"driver":     "custom",
+				"connection": "default",
+				"via": func() (cachecontract.Driver, error) {
+					return redisfacades.Cache("redis")
+				},
+			},
+		},
+	})
+}

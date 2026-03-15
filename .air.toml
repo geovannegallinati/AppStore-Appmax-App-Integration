@@ -1,0 +1,24 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  cmd = "go build -o ./tmp/server ./main.go"
+  bin = "./tmp/server"
+  include_ext = ["go"]
+  include_file = [".env"]
+  exclude_dir = ["tmp", ".git", ".gocache", ".gomodcache", "tests", "vendor"]
+  delay = 500
+  kill_delay = "500ms"
+  rerun = false
+
+[log]
+  time = false
+
+[color]
+  main = "magenta"
+  watcher = "cyan"
+  build = "yellow"
+  runner = "green"
+
+[misc]
+  clean_on_exit = true

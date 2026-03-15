@@ -1,0 +1,109 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-appmax_checkout}
+      POSTGRES_USER: ${DB_USERNAME:-appmax}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-appmax}"]
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      target: dev
+      args:
+        APP_PORT: ${APP_PORT:-8080}
+    env_file: .env
+    environment:
+      DB_HOST: postgres
+      REDIS_HOST: redis
+      CGO_ENABLED: "0"
+      APP_HOST: ${APP_HOST:-0.0.0.0}
+      APP_PORT: ${APP_PORT:-8080}
+      APPMAX_CALLBACK_URL: ${NGROK_URL:-http://localhost:8080}/integrations/appmax/callback/install
+    ports:
+      - "${APP_PORT:-8080}:${APP_PORT:-8080}"
+    volumes:
+      - .:/app
+      - /app/tmp
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:${APP_PORT:-8080}/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 180s
+
+  ngrok:
+    image: ngrok/ngrok:alpine
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        if [ -z "$$NGROK_AUTHTOKEN" ]; then
+          echo "NGROK_AUTHTOKEN is empty."
+          echo "Create a ngrok account at https://dashboard.ngrok.com/signup and set NGROK_AUTHTOKEN in .env."
+          exit 1
+        fi
+
+        ngrok config add-authtoken "$$NGROK_AUTHTOKEN" >/dev/null 2>&1 || true
+
+        if [ -n "$$NGROK_URL" ]; then
+          domain=$(echo "$$NGROK_URL" | sed 's|https\?://||')
+          echo "Trying reserved ngrok domain: $$domain"
+          ngrok http --url=$$domain app:$$APP_PORT
+          status=$$?
+          if [ "$$status" -eq 0 ]; then
+            exit 0
+          fi
+          echo "Reserved ngrok domain failed (status $$status). Falling back to dynamic tunnel."
+        else
+          echo "NGROK_URL is empty. Starting dynamic ngrok tunnel."
+        fi
+        exec ngrok http app:$$APP_PORT
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
+      NGROK_URL: ${NGROK_URL:-}
+      APP_PORT: ${APP_PORT:-8080}
+    ports:
+      - "4040:4040"
+    depends_on:
+      app:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:4040/api/tunnels | grep -q '\"public_url\"'"]
+      interval: 3s
+      timeout: 5s
+      retries: 20
+      start_period: 5s
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+
+volumes:
+  postgres_data:
