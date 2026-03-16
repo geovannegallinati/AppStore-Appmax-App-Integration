@@ -1,7 +1,8 @@
 APP_PORT   ?= $(shell grep -E '^APP_PORT=' .env 2>/dev/null | cut -d= -f2 || echo 8080)
+APP_URL    ?= $(shell grep -E '^APP_URL=' .env 2>/dev/null | head -n1 | cut -d= -f2- | tr -d '\r' | sed -e "s/^['\"]//" -e "s/['\"]$$//" -e "s|/*$$||" -e "s|:[0-9][0-9]*$$||")
 NGROK_URL  ?= $(shell grep -E '^NGROK_URL=' .env 2>/dev/null | cut -d= -f2 || echo "")
 NGROK_AUTHTOKEN ?= $(shell grep -E '^NGROK_AUTHTOKEN=' .env 2>/dev/null | cut -d= -f2 || echo "")
-BASE_URL    = http://localhost:$(APP_PORT)
+BASE_URL    = $(APP_URL):$(APP_PORT)
 HEALTH_URL  = $(BASE_URL)/health
 
 COMPOSE = docker compose -f docker-compose.yml
@@ -44,7 +45,8 @@ logs:
 	$(COMPOSE) logs -f
 
 health:
-	@for i in $$(seq 1 30); do \
+	@sleep 5
+	@for i in $$(seq 1 60); do \
 		if curl -sf $(HEALTH_URL) > /dev/null 2>&1; then \
 			exit 0; \
 		fi; \
