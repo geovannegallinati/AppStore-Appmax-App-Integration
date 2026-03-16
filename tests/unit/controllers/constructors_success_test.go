@@ -60,6 +60,16 @@ func (noopInstallService) Upsert(context.Context, services.UpsertInstallationInp
 	return &models.Installation{}, true, nil
 }
 
+type noopTokenManager struct{}
+
+func (noopTokenManager) AppToken(context.Context) (string, error) {
+	return "app-token", nil
+}
+
+func (noopTokenManager) MerchantToken(context.Context, *models.Installation) (string, error) {
+	return "merchant-token", nil
+}
+
 type noopCheckoutService struct{}
 
 func (noopCheckoutService) ProcessCreditCard(context.Context, *models.Installation, services.CheckoutCreditCardInput) (services.CheckoutCreditCardResult, error) {
@@ -100,6 +110,10 @@ func (noopWebhookService) Handle(context.Context, services.WebhookInput) (servic
 }
 
 func TestControllerConstructors_Success(t *testing.T) {
+	merchantAuthController, err := controllers.NewMerchantAuthController(noopTokenManager{})
+	require.NoError(t, err)
+	assert.NotNil(t, merchantAuthController)
+
 	checkoutController, err := controllers.NewCheckoutController(noopCheckoutService{})
 	require.NoError(t, err)
 	assert.NotNil(t, checkoutController)

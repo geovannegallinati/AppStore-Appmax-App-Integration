@@ -23,6 +23,10 @@ func Api() {
 	facades.Route().Get("/install/start", deps.InstallController.Start)
 	facades.Route().Post("/webhooks/appmax", deps.WebhookController.Handle)
 
+	facades.Route().Prefix("/installations/{key}").Middleware(middleware.MerchantContext(deps.InstallationRepository)).Group(func(r route.Router) {
+		r.Get("/merchant/token", deps.MerchantAuthController.SyncToken)
+	})
+
 	facades.Route().Prefix("/checkout/{key}").Middleware(middleware.MerchantContext(deps.InstallationRepository)).Group(func(r route.Router) {
 		r.Post("/order", deps.CheckoutController.CreateOrder)
 		r.Get("/status/{order_id}", deps.CheckoutController.Status)

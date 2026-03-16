@@ -10,6 +10,7 @@ import (
 type HTTPDependencies struct {
 	HealthController       *controllers.HealthController
 	InstallController      *controllers.InstallController
+	MerchantAuthController *controllers.MerchantAuthController
 	CheckoutController     *controllers.CheckoutController
 	WebhookController      *controllers.WebhookController
 	InstallationRepository repocontracts.InstallationRepository
@@ -55,6 +56,7 @@ func NewHTTPDependenciesWithORM(cfg AppmaxConfig, orm repocontracts.ORM) (*HTTPD
 	return &HTTPDependencies{
 		HealthController:       controllers.NewHealthController(),
 		InstallController:      ctrlModule.InstallController,
+		MerchantAuthController: ctrlModule.MerchantAuthController,
 		CheckoutController:     ctrlModule.CheckoutController,
 		WebhookController:      ctrlModule.WebhookController,
 		InstallationRepository: repositories.InstallationRepository,

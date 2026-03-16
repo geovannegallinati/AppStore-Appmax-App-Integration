@@ -2,8 +2,6 @@ package controllers
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -134,20 +132,19 @@ func (c *InstallController) Start(ctx http.Context) http.Response {
 	if externalKey == "" {
 		return ctx.Response().Json(400, responses.MessageResponse{Message: "external_key is required"})
 	}
-	attemptExternalKey := buildAttemptExternalKey(externalKey)
 
 	callbackURL := fmt.Sprintf("%s/integrations/appmax/callback/install", c.appURL)
 
 	appmaxCtx, cancel := context.WithTimeout(context.Background(), appmaxCallTimeout)
 	defer cancel()
 
-	hash, err := c.appmaxSvc.Authorize(appmaxCtx, appID, attemptExternalKey, callbackURL)
+	hash, err := c.appmaxSvc.Authorize(appmaxCtx, appID, externalKey, callbackURL)
 	if err != nil {
-		facades.Log().Errorf("install_controller: authorize failed for key %s (attempt %s): %v", externalKey, attemptExternalKey, err)
+		facades.Log().Errorf("install_controller: authorize failed for key %s: %v", externalKey, err)
 		return ctx.Response().Json(502, responses.MessageResponse{Message: "failed to initiate installation"})
 	}
 
-	stateJSON, err := json.Marshal(installState{AppID: appID, ExternalKey: attemptExternalKey})
+	stateJSON, err := json.Marshal(installState{AppID: appID, ExternalKey: externalKey})
 	if err != nil {
 		facades.Log().Errorf("install_controller: marshal state failed for hash %s: %v", hash, err)
 		return ctx.Response().Json(500, responses.MessageResponse{Message: "internal server error"})
@@ -257,34 +254,4 @@ func (c *InstallController) Callback(ctx http.Context) http.Response {
 
 	_ = created
 	return ctx.Response().Json(200, responses.InstallCallbackResponse{ExternalID: inst.ExternalID})
-}
-
-func buildAttemptExternalKey(origin string) string {
-	base := strings.TrimSpace(origin)
-	if base == "" {
-		base = "install"
-	}
-
-	suffixBytes := make([]byte, 8)
-	if _, err := rand.Read(suffixBytes); err != nil {
-		return fmt.Sprintf("%s-%d", truncateExternalKeyBase(base, 235), time.Now().UnixNano())
-	}
-
-	suffix := hex.EncodeToString(suffixBytes)
-	maxBaseLen := 255 - 1 - len(suffix)
-	if maxBaseLen < 1 {
-		maxBaseLen = 1
-	}
-
-	return fmt.Sprintf("%s-%s", truncateExternalKeyBase(base, maxBaseLen), suffix)
-}
-
-func truncateExternalKeyBase(base string, maxLen int) string {
-	if maxLen < 1 {
-		return "k"
-	}
-	if len(base) <= maxLen {
-		return base
-	}
-	return base[:maxLen]
 }

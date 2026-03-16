@@ -125,6 +125,7 @@ func TestNewControllerModule_Success(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, module)
 	assert.NotNil(t, module.InstallController)
+	assert.NotNil(t, module.MerchantAuthController)
 	assert.NotNil(t, module.CheckoutController)
 	assert.NotNil(t, module.WebhookController)
 }
@@ -135,6 +136,7 @@ func TestNewHTTPDependenciesWithORM_Success(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, deps)
 	assert.NotNil(t, deps.InstallController)
+	assert.NotNil(t, deps.MerchantAuthController)
 	assert.NotNil(t, deps.CheckoutController)
 	assert.NotNil(t, deps.WebhookController)
 	assert.NotNil(t, deps.InstallationRepository)
