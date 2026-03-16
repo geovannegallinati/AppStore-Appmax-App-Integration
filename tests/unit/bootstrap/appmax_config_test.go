@@ -26,7 +26,7 @@ func TestLoadAppmaxConfigFromEnv_DefaultURLs(t *testing.T) {
 	t.Setenv("APPMAX_API_URL", "")
 	t.Setenv("APPMAX_CLIENT_ID", "cid")
 	t.Setenv("APPMAX_CLIENT_SECRET", "csecret")
-	t.Setenv("APP_ID_UUID", "test-app-uuid")
+	t.Setenv("APPMAX_APP_ID_UUID", "test-app-uuid")
 	t.Setenv("APPMAX_APP_ID_NUMERIC", "123")
 	t.Setenv("APP_URL", "https://app.example.com")
 
@@ -42,7 +42,7 @@ func TestLoadAppmaxConfigFromEnv_Success(t *testing.T) {
 	t.Setenv("APPMAX_API_URL", "https://api.example.com")
 	t.Setenv("APPMAX_CLIENT_ID", "cid")
 	t.Setenv("APPMAX_CLIENT_SECRET", "csecret")
-	t.Setenv("APP_ID_UUID", "test-app-uuid")
+	t.Setenv("APPMAX_APP_ID_UUID", "test-app-uuid")
 	t.Setenv("APPMAX_APP_ID_NUMERIC", "123")
 	t.Setenv("APP_URL", "https://app.example.com")
 

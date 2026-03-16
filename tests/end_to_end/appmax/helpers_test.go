@@ -111,7 +111,7 @@ func fetchOAuthToken(authURL, clientID, clientSecret string) (string, int, error
 func runOAuthFlow(authURL, apiURL string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Minute)
 	defer cancel()
-	appIDUUID := strings.TrimSpace(env("APP_ID_UUID"))
+	appIDUUID := strings.TrimSpace(env("APPMAX_APP_ID_UUID"))
 	attemptExternalKey := buildInstallAttemptExternalKey()
 	cbURL := callbackURL()
 	log.Printf("Using callback URL: %s", cbURL)
@@ -132,7 +132,7 @@ func runOAuthFlow(authURL, apiURL string) error {
 		candidates = append(candidates, appIDUUID)
 	}
 	if len(candidates) == 0 {
-		return fmt.Errorf("no app id candidate available for authorize (APP_ID_UUID)")
+		return fmt.Errorf("no app id candidate available for authorize (APPMAX_APP_ID_UUID)")
 	}
 
 	var (
@@ -222,8 +222,8 @@ func authorizeInstallationInBrowser(redirectURL string) (string, error) {
 	chromedpCtx, chromedpCancel := context.WithTimeout(cdpCtx, 3*time.Minute)
 	defer chromedpCancel()
 
-	bcLogin := env("APPMAX_LOGIN")
-	bcPassword := env("APPMAX_PASSWORD")
+	bcLogin := os.Getenv("APPMAX_LOGIN")
+	bcPassword := os.Getenv("APPMAX_PASSWORD")
 	storeName := strings.TrimSpace(os.Getenv("APPMAX_STORE_NAME"))
 	if storeName == "" {
 		storeName = fmt.Sprintf("E2E Test Store %d", time.Now().Unix())

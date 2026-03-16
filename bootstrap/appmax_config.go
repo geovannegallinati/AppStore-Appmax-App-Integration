@@ -51,7 +51,7 @@ func LoadAppmaxConfigFromEnv() (AppmaxConfig, error) {
 		AppPublicURL:    appPublicURL,
 		AppClientID:     os.Getenv("APPMAX_CLIENT_ID"),
 		AppClientSecret: os.Getenv("APPMAX_CLIENT_SECRET"),
-		AppIDUUID:       os.Getenv("APP_ID_UUID"),
+		AppIDUUID:       os.Getenv("APPMAX_APP_ID_UUID"),
 		AppIDNumeric:    os.Getenv("APPMAX_APP_ID_NUMERIC"),
 	}
 
@@ -71,7 +71,7 @@ func (c AppmaxConfig) Validate() error {
 		missing = append(missing, "APPMAX_CLIENT_SECRET")
 	}
 	if strings.TrimSpace(c.AppIDUUID) == "" {
-		missing = append(missing, "APP_ID_UUID")
+		missing = append(missing, "APPMAX_APP_ID_UUID")
 	}
 	if strings.TrimSpace(c.AppIDNumeric) == "" {
 		missing = append(missing, "APPMAX_APP_ID_NUMERIC")
