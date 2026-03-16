@@ -42,10 +42,6 @@ func (c *MerchantAuthController) SyncToken(ctx http.Context) http.Response {
 	}
 
 	return ctx.Response().Json(200, responses.MerchantTokenSyncResponse{
-		ExternalKey:         inst.ExternalKey,
-		ExternalID:          inst.ExternalID,
-		MerchantClientID:    inst.MerchantClientID,
 		MerchantBearerToken: token,
-		TokenType:           "Bearer",
 	})
 }
