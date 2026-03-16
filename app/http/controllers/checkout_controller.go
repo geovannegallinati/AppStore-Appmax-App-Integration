@@ -46,7 +46,7 @@ func (c *CheckoutController) CreateOrder(ctx http.Context) http.Response {
 	result, err := c.checkoutSvc.CreateCustomerAndOrder(ctx.Context(), inst, toCustomerInput(body.Customer), toOrderInput(body.Order))
 	if err != nil {
 		facades.Log().Errorf("checkout_controller: create order failed: %v", err)
-		return ctx.Response().Json(502, responses.MessageResponse{Message: "order creation failed"})
+		return ctx.Response().Json(502, responses.MessageResponse{Message: upstreamErrorMessage(err, "order creation failed")})
 	}
 
 	return ctx.Response().Json(200, responses.CheckoutCreateOrderResponse{
@@ -92,7 +92,7 @@ func (c *CheckoutController) PayCreditCard(ctx http.Context) http.Response {
 			return ctx.Response().Json(422, responses.MessageResponse{Message: "payment declined"})
 		}
 		facades.Log().Errorf("checkout_controller: credit card failed: %v", err)
-		return ctx.Response().Json(502, responses.MessageResponse{Message: "payment processing failed"})
+		return ctx.Response().Json(502, responses.MessageResponse{Message: upstreamErrorMessage(err, "payment processing failed")})
 	}
 
 	return ctx.Response().Json(200, responses.CheckoutCreditCardResponse{
@@ -125,7 +125,7 @@ func (c *CheckoutController) PayPix(ctx http.Context) http.Response {
 	result, err := c.checkoutSvc.ProcessPix(ctx.Context(), inst, input)
 	if err != nil {
 		facades.Log().Errorf("checkout_controller: pix failed: %v", err)
-		return ctx.Response().Json(502, responses.MessageResponse{Message: "payment processing failed"})
+		return ctx.Response().Json(502, responses.MessageResponse{Message: upstreamErrorMessage(err, "payment processing failed")})
 	}
 
 	return ctx.Response().Json(200, responses.CheckoutPixResponse{
@@ -157,7 +157,7 @@ func (c *CheckoutController) PayBoleto(ctx http.Context) http.Response {
 	result, err := c.checkoutSvc.ProcessBoleto(ctx.Context(), inst, input)
 	if err != nil {
 		facades.Log().Errorf("checkout_controller: boleto failed: %v", err)
-		return ctx.Response().Json(502, responses.MessageResponse{Message: "payment processing failed"})
+		return ctx.Response().Json(502, responses.MessageResponse{Message: upstreamErrorMessage(err, "payment processing failed")})
 	}
 
 	return ctx.Response().Json(200, responses.CheckoutBoletoResponse{
@@ -219,7 +219,7 @@ func (c *CheckoutController) Installments(ctx http.Context) http.Response {
 	})
 	if err != nil {
 		facades.Log().Errorf("checkout_controller: installments failed: %v", err)
-		return ctx.Response().Json(502, responses.MessageResponse{Message: "failed to fetch installments"})
+		return ctx.Response().Json(502, responses.MessageResponse{Message: upstreamErrorMessage(err, "failed to fetch installments")})
 	}
 
 	return ctx.Response().Json(200, items)
@@ -247,7 +247,7 @@ func (c *CheckoutController) Refund(ctx http.Context) http.Response {
 	})
 	if err != nil {
 		facades.Log().Errorf("checkout_controller: refund failed: %v", err)
-		return ctx.Response().Json(502, responses.MessageResponse{Message: "refund request failed"})
+		return ctx.Response().Json(502, responses.MessageResponse{Message: refundErrorMessage(err)})
 	}
 
 	return ctx.Response().Json(200, responses.MessageResponse{Message: "Refund request accepted"})
@@ -273,7 +273,7 @@ func (c *CheckoutController) Tokenize(ctx http.Context) http.Response {
 	})
 	if err != nil {
 		facades.Log().Errorf("checkout_controller: tokenize failed: %v", err)
-		return ctx.Response().Json(502, responses.MessageResponse{Message: "tokenization failed"})
+		return ctx.Response().Json(502, responses.MessageResponse{Message: upstreamErrorMessage(err, "tokenization failed")})
 	}
 
 	return ctx.Response().Json(200, responses.CheckoutTokenizeResponse{Token: token})
@@ -300,7 +300,7 @@ func (c *CheckoutController) AddTracking(ctx http.Context) http.Response {
 	})
 	if err != nil {
 		facades.Log().Errorf("checkout_controller: tracking failed: %v", err)
-		return ctx.Response().Json(502, responses.MessageResponse{Message: "tracking update failed"})
+		return ctx.Response().Json(502, responses.MessageResponse{Message: upstreamErrorMessage(err, "tracking update failed")})
 	}
 
 	return ctx.Response().Json(200, responses.CheckoutTrackingResponse{Message: "tracking accepted"})
@@ -324,7 +324,7 @@ func (c *CheckoutController) Upsell(ctx http.Context) http.Response {
 	})
 	if err != nil {
 		facades.Log().Errorf("checkout_controller: upsell failed: %v", err)
-		return ctx.Response().Json(502, responses.MessageResponse{Message: "upsell failed"})
+		return ctx.Response().Json(502, responses.MessageResponse{Message: upstreamErrorMessage(err, "upsell failed")})
 	}
 
 	return ctx.Response().Json(200, responses.CheckoutUpsellResponse{
