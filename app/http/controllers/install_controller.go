@@ -1,9 +1,11 @@
 package controllers
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"strings"
 	"time"
 
@@ -223,6 +225,16 @@ func (c *InstallController) InstallCompletedFrontend(ctx http.Context) http.Resp
 }
 
 func (c *InstallController) Callback(ctx http.Context) http.Response {
+	var rawBody []byte
+	if origin := ctx.Request().Origin(); origin != nil && origin.Body != nil {
+		rawBody, _ = io.ReadAll(origin.Body)
+		origin.Body = io.NopCloser(bytes.NewReader(rawBody))
+	}
+	facades.Log().Infof("[install:debug] raw callback from %s — headers: %v | body: %s",
+		ctx.Request().Ip(),
+		ctx.Request().Headers(),
+		string(rawBody))
+
 	var body requests.InstallCallbackRequest
 	if err := ctx.Request().Bind(&body); err != nil {
 		facades.Log().Debugf("[install] healthcheck POST from %s — bind error: %v", ctx.Request().Ip(), err)
