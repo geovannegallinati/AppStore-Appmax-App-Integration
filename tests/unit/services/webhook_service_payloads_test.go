@@ -291,33 +291,78 @@ func TestWebhookService_KnownNoOpEvents_MarkedProcessedWithoutOrderLookup(t *tes
 	}
 }
 
-// TestWebhookService_AppmaxPascalCaseOrderEvents_MarkedProcessedWithoutStatusUpdate
-// documents that real Appmax events use PascalCase names (e.g. "OrderApproved")
-// while webhookStatusMap keys use snake_case (e.g. "order_approved").
-// These events arrive, are persisted, and are marked processed — but no order status is updated.
-func TestWebhookService_AppmaxPascalCaseOrderEvents_MarkedProcessedWithoutStatusUpdate(t *testing.T) {
+// TestWebhookService_PascalCaseMappedEvents_UpdatesOrderStatus verifies that every
+// PascalCase event in webhookStatusMap correctly updates the order to its expected status.
+func TestWebhookService_PascalCaseMappedEvents_UpdatesOrderStatus(t *testing.T) {
+	tests := []struct {
+		event       string
+		wantStatus  string
+		paymentType string
+	}{
+		{"OrderAuthorized", "autorizado", "CreditCard"},
+		{"OrderApproved", "aprovado", "CreditCard"},
+		{"OrderBilletCreated", "pendente", "Boleto"},
+		{"OrderPaid", "aprovado", "CreditCard"},
+		{"OrderPendingIntegration", "pendente_integracao", "CreditCard"},
+		{"OrderRefund", "estornado", "CreditCard"},
+		{"OrderPixCreated", "pendente", "Pix"},
+		{"OrderPaidByPix", "aprovado", "Pix"},
+		{"OrderPixExpired", "cancelado", "Pix"},
+		{"OrderIntegrated", "integrado", "CreditCard"},
+		{"OrderBilletOverdue", "cancelado", "Boleto"},
+		{"OrderChargeBackInTreatment", "chargeback_em_tratativa", "CreditCard"},
+		{"OrderUpSold", "aprovado", "CreditCard"},
+		{"CreatedSubscription", "aprovado", "CreditCard"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.event, func(t *testing.T) {
+			orderID := 1
+			savedStatus := ""
+			markedProcessed := false
+
+			eventRepo := baseEventRepo(30)
+			eventRepo.SaveFunc = func(_ context.Context, event *models.WebhookEvent) error {
+				markedProcessed = event.Processed
+				return nil
+			}
+			orderRepo := &mocks.MockOrderRepository{
+				FindByAppmaxOrderIDFunc: func(_ context.Context, id int) (*models.Order, error) {
+					return &models.Order{ID: 5, AppmaxOrderID: id, Status: "pendente"}, nil
+				},
+				SaveFunc: func(_ context.Context, order *models.Order) error {
+					savedStatus = order.Status
+					return nil
+				},
+			}
+
+			svc := mustWebhookService(t, eventRepo, orderRepo)
+			result, err := svc.Handle(context.Background(), services.WebhookInput{
+				Event:   tt.event,
+				OrderID: &orderID,
+				Payload: buildOrderPayload(tt.event, "", orderID, "pendente", tt.paymentType),
+			})
+
+			require.NoError(t, err)
+			assert.False(t, result.AlreadyProcessed)
+			assert.Equal(t, tt.wantStatus, savedStatus)
+			assert.True(t, markedProcessed)
+		})
+	}
+}
+
+// TestWebhookService_PascalCaseUnmappedEvents_MarkedProcessedWithoutStatusUpdate verifies
+// that PascalCase events not present in webhookStatusMap are persisted and marked
+// processed without updating order status.
+func TestWebhookService_PascalCaseUnmappedEvents_MarkedProcessedWithoutStatusUpdate(t *testing.T) {
 	tests := []struct {
 		event       string
 		paymentType string
 	}{
-		{"OrderApproved", "CreditCard"},
-		{"OrderAuthorized", "CreditCard"},
-		{"OrderPaid", "CreditCard"},
-		{"OrderPendingIntegration", "CreditCard"},
-		{"OrderIntegrated", "CreditCard"},
-		{"OrderUpSold", "CreditCard"},
-		{"OrderRefund", "CreditCard"},
 		{"OrderPartialRefund", "CreditCard"},
-		{"OrderChargeBackInTreatment", "CreditCard"},
 		{"OrderChargeBackGain", "CreditCard"},
 		{"ChargeFailed", "CreditCard"},
 		{"ChargeSuccess", "CreditCard"},
-		{"OrderBilletCreated", "Boleto"},
-		{"OrderBilletOverdue", "Boleto"},
-		{"OrderPixCreated", "Pix"},
-		{"OrderPaidByPix", "Pix"},
-		{"OrderPixExpired", "Pix"},
-		{"CreatedSubscription", "CreditCard"},
 		{"CanceledSubscription", "CreditCard"},
 	}
 
@@ -327,7 +372,7 @@ func TestWebhookService_AppmaxPascalCaseOrderEvents_MarkedProcessedWithoutStatus
 			orderStatusUpdated := false
 			markedProcessed := false
 
-			eventRepo := baseEventRepo(30)
+			eventRepo := baseEventRepo(31)
 			eventRepo.SaveFunc = func(_ context.Context, event *models.WebhookEvent) error {
 				markedProcessed = event.Processed
 				return nil
@@ -357,15 +402,19 @@ func TestWebhookService_AppmaxPascalCaseOrderEvents_MarkedProcessedWithoutStatus
 	}
 }
 
-// TestWebhookService_AppmaxCustomerEvents_MarkedProcessedWithoutOrderLookup verifies
-// that PascalCase customer events (with no order ID) are handled gracefully.
-func TestWebhookService_AppmaxCustomerEvents_MarkedProcessedWithoutOrderLookup(t *testing.T) {
+// TestWebhookService_PascalCaseCustomerNoOpEvents_MarkedProcessedWithoutOrderLookup verifies
+// that PascalCase customer and subscription events are handled as no-ops without touching
+// the order repository.
+func TestWebhookService_PascalCaseCustomerNoOpEvents_MarkedProcessedWithoutOrderLookup(t *testing.T) {
 	tests := []struct {
-		event string
+		event   string
+		payload models.JSONMap
 	}{
-		{"CustomerCreated"},
-		{"CustomerInterested"},
-		{"CustomerContacted"},
+		{"CustomerCreated", buildCustomerPayload("CustomerCreated", 1)},
+		{"CustomerInterested", buildCustomerPayload("CustomerInterested", 1)},
+		{"CustomerContacted", buildCustomerPayload("CustomerContacted", 1)},
+		{"SubscriptionCancellationEvent", buildSubscriptionPayload("SubscriptionCancellationEvent", 1)},
+		{"SubscriptionDelayedEvent", buildSubscriptionPayload("SubscriptionDelayedEvent", 1)},
 	}
 
 	for _, tt := range tests {
@@ -389,7 +438,7 @@ func TestWebhookService_AppmaxCustomerEvents_MarkedProcessedWithoutOrderLookup(t
 			result, err := svc.Handle(context.Background(), services.WebhookInput{
 				Event:   tt.event,
 				OrderID: nil,
-				Payload: buildCustomerPayload(tt.event, 1),
+				Payload: tt.payload,
 			})
 
 			require.NoError(t, err)

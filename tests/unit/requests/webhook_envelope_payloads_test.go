@@ -39,6 +39,8 @@ func TestWebhookEnvelope_AllRealEventNames_ParseWithoutError(t *testing.T) {
 		`{"event":"SubscriptionCancellationEvent","event_type":"","data":{"id":1,"site_id":1470,"firstname":"Noeli","lastname":"Guerra","email":"felipe22@galhardo.biz","telephone":"5191913915","postcode":"91642854","address_street":"Travessa Mendes","address_street_number":"39332","address_street_complement":"4 Andar","address_street_district":"voluptatum","address_city":"Noel do Norte","address_state":"SE","document_number":"75798407829","created_at":"2026-03-17 09:26:35","visited_url":"","uf":"SE","fullname":"Noeli Guerra","interested_bundle":[],"subscription":{"id":null,"installments":null,"total":null,"created_at":"2026-03-17 09:26:35","cancelled_at":null,"bundle":{"id":1,"name":"My product 1","description":"","production_cost":"R$ 0,00","identifier":null,"products":[{"id":1,"sku":"9000010","name":"Livro de receitas","description":"","price":"62.00","quantity":1,"image":"https://gateway-boleto-homolog-appmax.s3-sa-east-1.amazonaws.com/","external_id":null}]}}}}`,
 		`{"event":"SubscriptionDelayedEvent","event_type":"","data":{"id":1,"site_id":1470,"firstname":"Ricardo","lastname":"Faro","email":"laura90@avila.org","telephone":"3121504676","postcode":"63209123","address_street":"Avenida Andres Vale","address_street_number":"7","address_street_complement":"Apto 7","address_street_district":"soluta","address_city":"Maia do Norte","address_state":"SE","document_number":"35432870444","created_at":"2026-03-17 09:26:41","visited_url":"","uf":"SE","fullname":"Ricardo Faro","interested_bundle":[],"subscription":{"id":null,"installments":null,"total":null,"created_at":"2026-03-17 09:26:41","cancelled_at":null,"bundle":{"id":1,"name":"My product 1","description":"","production_cost":"R$ 0,00","identifier":null,"products":[{"id":1,"sku":"9000010","name":"Livro de receitas","description":"","price":"62.00","quantity":1,"image":"https://gateway-boleto-homolog-appmax.s3-sa-east-1.amazonaws.com/","external_id":null}]}}}}`,
 		`{"event":"order_paid","event_type":"order","data":{"order_id":12844,"foo":"bar"}}`,
+		`{"event":"OrderApproved","event_type":"","data":{"order_id":1,"order_total_products":369,"order_status":"aprovado","order_freight_value":24.26,"order_freight_type":"PAC","order_payment_type":"CreditCard","order_total":393.26,"order_total_refunded":0,"order_refund_amount":0,"order_created_at":"2026-03-17 09:28:17","customer_id":1,"customer_firstname":"Leandro","customer_lastname":"Soto","customer_email":"toledo.sergio@gmail.com","customer_uf":"AC","customer_fullname":"Leandro Soto","company_name":"DemoAppGeovanne","company_cnpj":"66535306046","company_email":"geovanne.gallinati@teste.com"}}`,
+		`{"event":"OrderApproved","event_type":"","data":{"id":1,"customer_id":1,"total_products":465,"status":"aprovado","freight_value":42.22,"freight_type":"PAC","payment_type":"CreditCard","total":507.22,"full_payment_amount":"507.22","pix_payment_link":"","company_name":"DemoAppGeovanne","bundles":[],"products":[],"visit":[],"meta":[]}}`,
 	}
 
 	for _, raw := range envelopes {
@@ -119,20 +121,6 @@ func TestWebhookEnvelope_SubscriptionEvent_NestedSubscriptionObjectParsed(t *tes
 	assert.Equal(t, "9000010", products[0].(map[string]any)["sku"])
 }
 
-// TestWebhookDataRequest_AppmaxPayload_DataIdNotExtractedAsOrderId documents that
-// real Appmax payloads use "data.id" for the order ID, while WebhookDataRequest
-// only reads "data.order_id". As a result, order ID extraction returns nil for
-// all real Appmax events (except the legacy format).
-func TestWebhookDataRequest_AppmaxPayload_DataIdNotExtractedAsOrderId(t *testing.T) {
-	appmaxPayload := `{"id":1,"customer_id":1,"total_products":265,"status":"aprovado","payment_type":"CreditCard","total":267.48}`
-
-	var data requests.WebhookDataRequest
-	err := json.Unmarshal([]byte(appmaxPayload), &data)
-
-	require.NoError(t, err)
-	assert.Nil(t, data.OrderID.Ptr(), "data.id is not read as order_id — use data.order_id for order ID extraction")
-}
-
 // TestWebhookDataRequest_LegacyPayload_OrderIdExtracted verifies that the legacy
 // Appmax format using "order_id" field is correctly parsed.
 func TestWebhookDataRequest_LegacyPayload_OrderIdExtracted(t *testing.T) {
@@ -146,26 +134,28 @@ func TestWebhookDataRequest_LegacyPayload_OrderIdExtracted(t *testing.T) {
 	assert.Equal(t, 12844, *data.OrderID.Ptr())
 }
 
-// TestWebhookDataRequest_PixPayload_OrderIdIsNil verifies that Pix event payloads
-// (which use "data.id" and not "data.order_id") result in nil order ID.
-func TestWebhookDataRequest_PixPayload_OrderIdIsNil(t *testing.T) {
+// TestExtractOrderID_PixStandardPayload_ReturnsDataId verifies that Pix event payloads
+// in Standard model (data.id + data.customer_id) correctly extract the order ID from data.id.
+func TestExtractOrderID_PixStandardPayload_ReturnsDataId(t *testing.T) {
 	pixPayload := `{"id":1,"customer_id":1,"total_products":362,"status":"pendente","payment_type":"Pix","total":434.01,"pix_payment_link":"https://breakingcode.sandboxappmax.com.br/show-pix/1"}`
 
 	var data requests.WebhookDataRequest
-	err := json.Unmarshal([]byte(pixPayload), &data)
+	require.NoError(t, json.Unmarshal([]byte(pixPayload), &data))
 
-	require.NoError(t, err)
-	assert.Nil(t, data.OrderID.Ptr())
+	orderID := data.ExtractOrderID()
+	require.NotNil(t, orderID)
+	assert.Equal(t, 1, *orderID)
 }
 
-// TestWebhookDataRequest_BoletoPayload_OrderIdIsNil verifies that Boleto event payloads
-// (which use "data.id" and not "data.order_id") result in nil order ID.
-func TestWebhookDataRequest_BoletoPayload_OrderIdIsNil(t *testing.T) {
+// TestExtractOrderID_BoletoStandardPayload_ReturnsDataId verifies that Boleto event payloads
+// in Standard model (data.id + data.customer_id) correctly extract the order ID from data.id.
+func TestExtractOrderID_BoletoStandardPayload_ReturnsDataId(t *testing.T) {
 	boletoPayload := `{"id":1,"customer_id":1,"total_products":177,"status":"pendente","payment_type":"Boleto","total":307.15,"billet_date_overdue":"","billet_url":null,"billet_digitable_line":null}`
 
 	var data requests.WebhookDataRequest
-	err := json.Unmarshal([]byte(boletoPayload), &data)
+	require.NoError(t, json.Unmarshal([]byte(boletoPayload), &data))
 
-	require.NoError(t, err)
-	assert.Nil(t, data.OrderID.Ptr())
+	orderID := data.ExtractOrderID()
+	require.NotNil(t, orderID)
+	assert.Equal(t, 1, *orderID)
 }
