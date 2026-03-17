@@ -126,7 +126,7 @@ func frontendEndpoints(baseURL, activeRoute string) []frontendEndpoint {
 			Label:       "Install",
 			Method:      "GET",
 			Path:        routeInstallStart,
-			Description: "Install page with a form to start the flow.",
+			Description: "Install page with a button to start the flow.",
 		},
 		{
 			Label:       "Callback",

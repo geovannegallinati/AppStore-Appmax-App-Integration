@@ -29,16 +29,10 @@
     {{ if .ShowInstallForm }}
       <section class="frontend-panel">
         <h2>Installation</h2>
-        <p>Fill in the fields and click the button to start the installation flow.</p>
+        <p>{{ .Message }}</p>
         <form class="install-form" method="GET" action="{{ .InstallFormAction }}" target="_blank">
-          <label>
-            app_id
-            <input type="text" name="app_id" value="{{ .DefaultInstallAppID }}" required />
-          </label>
-          <label>
-            external_key
-            <input type="text" name="external_key" value="{{ .DefaultExternalKey }}" required />
-          </label>
+          <input type="hidden" name="app_id" value="{{ .DefaultInstallAppID }}" />
+          <input type="hidden" name="external_key" value="" />
           <button type="submit" class="frontend-btn">Install Appmax</button>
         </form>
       </section>
