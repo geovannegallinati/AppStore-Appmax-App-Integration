@@ -201,16 +201,21 @@ func (c *InstallController) Callback(ctx http.Context) http.Response {
 		return ctx.Response().Json(400, responses.MessageResponse{Message: "invalid request body"})
 	}
 
-	facades.Log().Debugf("[install] healthcheck POST from %s — app_id=%s external_key=%s client_id=%s",
-		ctx.Request().Ip(), body.AppID, body.ExternalKey, body.MerchantClientID)
+	facades.Log().Debugf("[install] healthcheck POST from %s — app_id=%s external_key=%s client_key=%s client_id=%s",
+		ctx.Request().Ip(), body.AppID, body.ExternalKey, body.ClientKey, body.MerchantClientID)
 
-	if body.AppID == "" || body.ExternalKey == "" || body.MerchantClientID == "" || body.MerchantClientSecret == "" {
-		return ctx.Response().Json(400, responses.MessageResponse{Message: "app_id, external_key, merchant_client_id and merchant_client_secret are required"})
+	if body.AppID == "" || body.ExternalKey == "" || body.ClientKey == "" || body.MerchantClientID == "" || body.MerchantClientSecret == "" {
+		return ctx.Response().Json(400, responses.MessageResponse{Message: "app_id, external_key, client_key, merchant_client_id and merchant_client_secret are required"})
 	}
 
 	if body.AppID != c.appIDNumeric {
 		facades.Log().Errorf("install_controller: app_id mismatch for key %s: got %s", body.ExternalKey, body.AppID)
 		return ctx.Response().Json(400, responses.MessageResponse{Message: "invalid app_id"})
+	}
+
+	if body.ClientKey != c.appIDUUID {
+		facades.Log().Errorf("install_controller: client_key mismatch for key %s: got %s", body.ExternalKey, body.ClientKey)
+		return ctx.Response().Json(400, responses.MessageResponse{Message: "invalid client_key"})
 	}
 
 	inst, created, err := c.installSvc.Upsert(ctx.Context(), services.UpsertInstallationInput{

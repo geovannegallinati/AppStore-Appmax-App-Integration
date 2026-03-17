@@ -319,6 +319,7 @@ func TestInstallController_Callback_HappyPath(t *testing.T) {
 		bindResult: requests.InstallCallbackRequest{
 			AppID:                testAppNumeric,
 			ExternalKey:          "some-key",
+			ClientKey:            testAppUUID,
 			MerchantClientID:     "mc-id",
 			MerchantClientSecret: "mc-secret",
 		},
@@ -362,6 +363,7 @@ func TestInstallController_Callback_WrongAppID(t *testing.T) {
 		bindResult: requests.InstallCallbackRequest{
 			AppID:                "wrong-app-id",
 			ExternalKey:          "some-key",
+			ClientKey:            testAppUUID,
 			MerchantClientID:     "mc-id",
 			MerchantClientSecret: "mc-secret",
 		},
@@ -389,6 +391,7 @@ func TestInstallController_Callback_UpsertFails(t *testing.T) {
 		bindResult: requests.InstallCallbackRequest{
 			AppID:                testAppNumeric,
 			ExternalKey:          "some-key",
+			ClientKey:            testAppUUID,
 			MerchantClientID:     "mc-id",
 			MerchantClientSecret: "mc-secret",
 		},
@@ -399,6 +402,51 @@ func TestInstallController_Callback_UpsertFails(t *testing.T) {
 
 	require.Equal(t, "json", ctx.resp.captured.kind)
 	assert.Equal(t, 500, ctx.resp.captured.status)
+}
+
+func TestInstallController_Callback_MissingClientKey(t *testing.T) {
+	ctrl := newTestInstallController(t, &mockAppmaxSvcInstall{}, &mockInstallSvcCapture{})
+
+	req := &fakeHTTPRequest{
+		bindResult: requests.InstallCallbackRequest{
+			AppID:                testAppNumeric,
+			ExternalKey:          "some-key",
+			MerchantClientID:     "mc-id",
+			MerchantClientSecret: "mc-secret",
+		},
+	}
+	ctx := newFakeHTTPContext(req)
+
+	ctrl.Callback(ctx)
+
+	require.Equal(t, "json", ctx.resp.captured.kind)
+	assert.Equal(t, 400, ctx.resp.captured.status)
+	body, ok := ctx.resp.captured.jsonBody.(responses.MessageResponse)
+	require.True(t, ok)
+	assert.Contains(t, body.Message, "client_key")
+}
+
+func TestInstallController_Callback_WrongClientKey(t *testing.T) {
+	ctrl := newTestInstallController(t, &mockAppmaxSvcInstall{}, &mockInstallSvcCapture{})
+
+	req := &fakeHTTPRequest{
+		bindResult: requests.InstallCallbackRequest{
+			AppID:                testAppNumeric,
+			ExternalKey:          "some-key",
+			ClientKey:            "wrong-uuid",
+			MerchantClientID:     "mc-id",
+			MerchantClientSecret: "mc-secret",
+		},
+	}
+	ctx := newFakeHTTPContext(req)
+
+	ctrl.Callback(ctx)
+
+	require.Equal(t, "json", ctx.resp.captured.kind)
+	assert.Equal(t, 400, ctx.resp.captured.status)
+	body, ok := ctx.resp.captured.jsonBody.(responses.MessageResponse)
+	require.True(t, ok)
+	assert.Equal(t, "invalid client_key", body.Message)
 }
 
 func TestInstallController_InstallStartFrontend_DefaultsAppID(t *testing.T) {
