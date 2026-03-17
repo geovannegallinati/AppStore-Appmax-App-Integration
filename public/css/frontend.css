@@ -1,0 +1,245 @@
+:root {
+  --bg: #0a1524;
+  --bg-2: #1f3454;
+  --panel: rgba(16, 31, 49, 0.9);
+  --border: #335277;
+  --text: #e7f1ff;
+  --muted: #a5b9d2;
+  --ok: #22c59b;
+  --accent: #7fc7ff;
+  --action: #19a68a;
+  --action-hover: #11866f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body.frontend-body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  color: var(--text);
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  background:
+    radial-gradient(circle at 15% 20%, #24406a 0%, transparent 45%),
+    radial-gradient(circle at 80% 0%, #244f43 0%, transparent 35%),
+    linear-gradient(160deg, var(--bg), var(--bg-2));
+}
+
+.frontend-card {
+  width: min(960px, 96vw);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--panel);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.35);
+  padding: 28px 24px;
+}
+
+.frontend-card.compact {
+  width: min(640px, 92vw);
+}
+
+.frontend-pill {
+  display: inline-block;
+  font-size: 12px;
+  border-radius: 999px;
+  padding: 6px 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: rgba(34, 197, 155, 0.12);
+  color: var(--ok);
+  border: 1px solid rgba(34, 197, 155, 0.35);
+}
+
+.frontend-title {
+  margin: 12px 0 10px;
+  font-size: clamp(24px, 3vw, 36px);
+  line-height: 1.15;
+}
+
+.frontend-ok {
+  color: var(--ok);
+}
+
+.frontend-message,
+.frontend-submessage {
+  margin: 0 0 10px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.frontend-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 16px 0 18px;
+}
+
+.frontend-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  border: 0;
+  border-radius: 10px;
+  padding: 0 16px;
+  color: #fff;
+  background: var(--action);
+  text-decoration: none;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.frontend-btn:hover {
+  background: var(--action-hover);
+}
+
+.frontend-btn.secondary {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.frontend-btn.secondary:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.frontend-panel,
+.frontend-endpoints,
+.frontend-tips {
+  margin-top: 18px;
+  border: 1px solid rgba(127, 199, 255, 0.24);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 14px;
+}
+
+.frontend-panel h2,
+.frontend-endpoints h2,
+.frontend-tips h2 {
+  margin: 0 0 10px;
+  font-size: 18px;
+}
+
+.install-form {
+  display: grid;
+  gap: 10px;
+  max-width: 520px;
+}
+
+.install-form label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+}
+
+.install-form input {
+  border: 1px solid rgba(127, 199, 255, 0.35);
+  background: rgba(7, 16, 28, 0.8);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 10px;
+  width: 100%;
+}
+
+.copy-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.frontend-copy-btn {
+  border: 1px solid rgba(127, 199, 255, 0.35);
+  border-radius: 8px;
+  background: rgba(127, 199, 255, 0.12);
+  color: #d4e9ff;
+  min-height: 38px;
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+.frontend-copy-btn:hover {
+  border-color: var(--accent);
+}
+
+.endpoint-row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 12px 0;
+}
+
+.endpoint-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.endpoint-row.active {
+  border-left: 3px solid var(--ok);
+  padding-left: 10px;
+}
+
+.endpoint-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.endpoint-top a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.endpoint-top a:hover {
+  text-decoration: underline;
+}
+
+.endpoint-method {
+  font-size: 11px;
+  border: 1px solid rgba(127, 199, 255, 0.28);
+  border-radius: 999px;
+  padding: 2px 8px;
+  color: #b8dcff;
+}
+
+.endpoint-row p {
+  margin: 8px 0;
+  color: var(--muted);
+}
+
+code {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 4px 8px;
+  color: #ffffff;
+  word-break: break-word;
+}
+
+.frontend-tips ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+}
+
+.frontend-tips li {
+  margin-bottom: 8px;
+}
+
+@media (max-width: 700px) {
+  .frontend-card {
+    padding: 20px 16px;
+  }
+
+  .copy-row {
+    grid-template-columns: 1fr;
+  }
+
+  .endpoint-top {
+    flex-wrap: wrap;
+  }
+}

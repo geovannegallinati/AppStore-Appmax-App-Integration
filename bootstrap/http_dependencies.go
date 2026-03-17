@@ -54,7 +54,7 @@ func NewHTTPDependenciesWithORM(cfg AppmaxConfig, orm repocontracts.ORM) (*HTTPD
 	}
 
 	return &HTTPDependencies{
-		HealthController:       controllers.NewHealthController(),
+		HealthController:       controllers.NewHealthController(cfg.AppPublicURL),
 		InstallController:      ctrlModule.InstallController,
 		MerchantAuthController: ctrlModule.MerchantAuthController,
 		CheckoutController:     ctrlModule.CheckoutController,

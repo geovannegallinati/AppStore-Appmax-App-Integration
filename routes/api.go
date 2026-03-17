@@ -15,12 +15,14 @@ func Api() {
 		return
 	}
 
+	facades.Route().Static("public", "./public")
 	facades.Route().Get("/", deps.HealthController.RootFrontend)
 	facades.Route().Get("/health", deps.HealthController.Check)
 	facades.Route().Get("/integrations/appmax/callback/install", deps.InstallController.CallbackGuide)
 	facades.Route().Post("/integrations/appmax/callback/install", deps.InstallController.Callback)
 
 	facades.Route().Get("/install/start", deps.InstallController.Start)
+	facades.Route().Get("/webhooks/appmax", deps.WebhookController.Guide)
 	facades.Route().Post("/webhooks/appmax", deps.WebhookController.Handle)
 
 	facades.Route().Prefix("/installations/{key}").Middleware(middleware.MerchantContext(deps.InstallationRepository)).Group(func(r route.Router) {

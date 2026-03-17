@@ -1,0 +1,19 @@
+{{ define "frontend/install_completed.tmpl" }}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ .Title }}</title>
+  <link rel="stylesheet" href="/public/css/frontend.css" />
+</head>
+<body class="frontend-body">
+  <main class="frontend-card compact">
+    <span class="frontend-pill">Installation completed</span>
+    <h1 class="frontend-title"><span class="frontend-ok">Success.</span> Installation is complete.</h1>
+    <p class="frontend-message">The AppMax integration token was confirmed successfully.</p>
+    <p class="frontend-submessage">You can safely close this tab now.</p>
+  </main>
+</body>
+</html>
+{{ end }}

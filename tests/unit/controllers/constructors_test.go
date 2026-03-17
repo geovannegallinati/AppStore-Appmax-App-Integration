@@ -18,7 +18,7 @@ func TestControllerConstructors_RejectNilDependency(t *testing.T) {
 	require.Error(t, err)
 	assert.Nil(t, checkoutController)
 
-	webhookController, err := controllers.NewWebhookController(nil)
+	webhookController, err := controllers.NewWebhookController(nil, "", "")
 	require.Error(t, err)
 	assert.Nil(t, webhookController)
 

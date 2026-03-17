@@ -16,14 +16,54 @@ import (
 
 type WebhookController struct {
 	webhookSvc services.WebhookService
+	adminURL   string
+	appURL     string
 }
 
-func NewWebhookController(webhookSvc services.WebhookService) (*WebhookController, error) {
+func NewWebhookController(webhookSvc services.WebhookService, adminURL, appURL string) (*WebhookController, error) {
 	if webhookSvc == nil {
 		return nil, fmt.Errorf("new webhook controller: %w", ErrNilDependency)
 	}
+	if strings.TrimSpace(adminURL) == "" || strings.TrimSpace(appURL) == "" {
+		return nil, fmt.Errorf("new webhook controller: %w", ErrInvalidConfig)
+	}
 
-	return &WebhookController{webhookSvc: webhookSvc}, nil
+	return &WebhookController{
+		webhookSvc: webhookSvc,
+		adminURL:   strings.TrimRight(strings.TrimSpace(adminURL), "/"),
+		appURL:     strings.TrimRight(strings.TrimSpace(appURL), "/"),
+	}, nil
+}
+
+func (c *WebhookController) Guide(ctx http.Context) http.Response {
+	baseURL := frontendBaseURL(ctx, c.appURL)
+	webhookEndpoint := absoluteURL(baseURL, routeWebhook)
+	apphookURL := apphookURLFromAdmin(c.adminURL)
+
+	page := frontendPageData{
+		Title:              "AppMax Checkout Demo - Webhook",
+		Badge:              "Webhook",
+		Headline:           "Appmax webhook setup",
+		Message:            "This route receives Appmax events via POST and also provides a setup guide on GET.",
+		Submessage:         "The frontend does not block integration: POST /webhooks/appmax remains available to Appmax.",
+		ActiveRoute:        routeWebhook,
+		PageKind:           "webhook",
+		Endpoints:          frontendEndpoints(baseURL, routeWebhook),
+		ShowWebhookGuide:   true,
+		AppmaxEnvironment:  appmaxEnvironmentName(c.adminURL),
+		AppmaxAdminURL:     c.adminURL,
+		AppmaxApphookURL:   apphookURL,
+		WebhookEndpointURL: webhookEndpoint,
+		Buttons: []frontendAction{
+			{Label: "Open Apphook", URL: apphookURL},
+		},
+		Tips: []string{
+			"Sandbox usually uses https://breakingcode.sandboxappmax.com.br/v2/apphook.",
+			"In production, the path follows APPMAX_ADMIN_URL from env plus /v2/apphook.",
+		},
+	}
+
+	return ctx.Response().View().Make("frontend/page.tmpl", page)
 }
 
 func (c *WebhookController) Handle(ctx http.Context) http.Response {

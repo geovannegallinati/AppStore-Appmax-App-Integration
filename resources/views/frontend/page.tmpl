@@ -1,0 +1,88 @@
+{{ define "frontend/page.tmpl" }}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ .Title }}</title>
+  <link rel="stylesheet" href="/public/css/frontend.css" />
+  <script src="/public/js/frontend.js" defer></script>
+</head>
+<body class="frontend-body" data-page-kind="{{ .PageKind }}" data-active-route="{{ .ActiveRoute }}">
+  <main class="frontend-card">
+    <span class="frontend-pill">{{ .Badge }}</span>
+    <h1 class="frontend-title">{{ .Headline }} <span class="frontend-ok">online</span></h1>
+    <p class="frontend-message">{{ .Message }}</p>
+    <p class="frontend-submessage">{{ .Submessage }}</p>
+
+    {{ if .Buttons }}
+      <section class="frontend-actions" aria-label="Main actions">
+        {{ range .Buttons }}
+          <a class="frontend-btn{{ if .Secondary }} secondary{{ end }}" href="{{ .URL }}">{{ .Label }}</a>
+        {{ end }}
+      </section>
+    {{ end }}
+
+    {{ if .ShowInstallForm }}
+      <section class="frontend-panel">
+        <h2>Installation</h2>
+        <p>Fill in the fields and click the button to start the installation flow.</p>
+        <form class="install-form" method="GET" action="{{ .InstallFormAction }}" target="_blank">
+          <label>
+            app_id
+            <input type="text" name="app_id" value="{{ .DefaultInstallAppID }}" required />
+          </label>
+          <label>
+            external_key
+            <input type="text" name="external_key" value="{{ .DefaultExternalKey }}" required />
+          </label>
+          <button type="submit" class="frontend-btn">Install on Breaking Code</button>
+        </form>
+      </section>
+    {{ end }}
+
+    {{ if .ShowWebhookGuide }}
+      <section class="frontend-panel">
+        <h2>How to register in Apphook</h2>
+        <p>Detected environment: <strong>{{ .AppmaxEnvironment }}</strong>.</p>
+        <p>Admin base URL (env): <code>{{ .AppmaxAdminURL }}</code></p>
+        <ol>
+          <li>Open <a href="{{ .AppmaxApphookURL }}" target="_blank" rel="noopener noreferrer">{{ .AppmaxApphookURL }}</a>.</li>
+          <li>Register this URL as your webhook endpoint:</li>
+        </ol>
+        <div class="copy-row">
+          <code id="webhook-endpoint-value">{{ .WebhookEndpointURL }}</code>
+          <button type="button" class="frontend-copy-btn" data-copy-target="#webhook-endpoint-value">Copy endpoint</button>
+        </div>
+        <p>This frontend only uses GET for display. POST <code>/webhooks/appmax</code> remains available for Appmax requests.</p>
+      </section>
+    {{ end }}
+
+    <section class="frontend-endpoints">
+      <h2>Available endpoints</h2>
+      {{ range .Endpoints }}
+        <article class="endpoint-row{{ if .Active }} active{{ end }}">
+          <div class="endpoint-top">
+            <span class="endpoint-method">{{ .Method }}</span>
+            <a href="{{ .Path }}">{{ .Path }}</a>
+          </div>
+          <p>{{ .Description }}</p>
+          <code>{{ .URL }}</code>
+        </article>
+      {{ end }}
+    </section>
+
+    {{ if .Tips }}
+      <section class="frontend-tips">
+        <h2>Quick tips</h2>
+        <ul>
+          {{ range .Tips }}
+            <li>{{ . }}</li>
+          {{ end }}
+        </ul>
+      </section>
+    {{ end }}
+  </main>
+</body>
+</html>
+{{ end }}

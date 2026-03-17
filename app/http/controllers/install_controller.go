@@ -20,84 +20,6 @@ import (
 const appmaxCallTimeout = 3 * time.Minute
 
 const installStateTTL = time.Hour
-const installCompletedFrontendTemplate = `<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AppMax Checkout Demo - Installation Completed</title>
-  <style>
-    :root {
-      --bg: #0d1b2a;
-      --panel: #1b263b;
-      --ok: #2ec4b6;
-      --txt: #e0e1dd;
-      --muted: #9aa6b2;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
-      color: var(--txt);
-      background:
-        radial-gradient(circle at 20% 20%, #22375a 0%, transparent 45%),
-        radial-gradient(circle at 80% 80%, #1e3a34 0%, transparent 40%),
-        var(--bg);
-      padding: 16px;
-    }
-    .card {
-      width: min(92vw, 640px);
-      border: 1px solid #34445e;
-      background: linear-gradient(160deg, rgba(27,38,59,0.95), rgba(17,28,43,0.95));
-      border-radius: 16px;
-      padding: 28px 24px;
-      box-shadow: 0 14px 40px rgba(0,0,0,0.35);
-    }
-    .badge {
-      display: inline-block;
-      background: rgba(46,196,182,0.14);
-      border: 1px solid rgba(46,196,182,0.35);
-      color: var(--ok);
-      border-radius: 999px;
-      padding: 6px 12px;
-      font-size: 12px;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      margin-bottom: 12px;
-    }
-    h1 {
-      margin: 0 0 10px;
-      font-size: clamp(24px, 3.2vw, 34px);
-      line-height: 1.2;
-    }
-    p {
-      margin: 0 0 12px;
-      color: var(--muted);
-      line-height: 1.5;
-    }
-    .ok {
-      color: var(--ok);
-      font-weight: 700;
-    }
-    .note {
-      margin-top: 12px;
-      font-size: 13px;
-    }
-  </style>
-</head>
-<body>
-  <main class="card">
-    <span class="badge">Installation completed</span>
-    <h1><span class="ok">Success.</span> Your installation is complete.</h1>
-    <p>The AppMax integration token was confirmed successfully.</p>
-    <p>You can close this browser tab now.</p>
-    <p class="note">This page can be safely closed after installation confirmation.</p>
-  </main>
-</body>
-</html>`
 
 type installState struct {
 	AppID       string
@@ -125,12 +47,18 @@ func NewInstallController(appmaxSvc services.AppmaxService, installSvc services.
 }
 
 func (c *InstallController) Start(ctx http.Context) http.Response {
-	appID := ctx.Request().Query("app_id", "")
+	appID := strings.TrimSpace(ctx.Request().Query("app_id", ""))
+	externalKey := strings.TrimSpace(ctx.Request().Query("external_key", ""))
+	if appID == "" || externalKey == "" {
+		if requestWantsHTML(ctx) {
+			return c.InstallStartFrontend(ctx, appID, externalKey)
+		}
+	}
+
 	if appID == "" {
 		return ctx.Response().Json(400, responses.MessageResponse{Message: "app_id is required"})
 	}
 
-	externalKey := ctx.Request().Query("external_key", "")
 	if externalKey == "" {
 		return ctx.Response().Json(400, responses.MessageResponse{Message: "external_key is required"})
 	}
@@ -161,13 +89,12 @@ func (c *InstallController) Start(ctx http.Context) http.Response {
 }
 
 func (c *InstallController) CallbackGuide(ctx http.Context) http.Response {
-	accept := strings.ToLower(ctx.Request().Header("Accept"))
-	wantsHTML := strings.Contains(accept, "text/html")
+	wantsHTML := requestWantsHTML(ctx)
 
 	token := strings.TrimSpace(ctx.Request().Query("token", ""))
 	if token == "" {
 		if wantsHTML {
-			return NewHealthController().CallbackFrontend(ctx)
+			return NewHealthController(c.appURL).CallbackFrontend(ctx)
 		}
 		return ctx.Response().Json(400, responses.MessageResponse{Message: "token is required"})
 	}
@@ -221,7 +148,40 @@ func (c *InstallController) CallbackGuide(ctx http.Context) http.Response {
 }
 
 func (c *InstallController) InstallCompletedFrontend(ctx http.Context) http.Response {
-	return ctx.Response().Data(200, "text/html; charset=utf-8", []byte(installCompletedFrontendTemplate))
+	return ctx.Response().View().Make("frontend/install_completed.tmpl", map[string]any{
+		"Title": "AppMax Checkout Demo - Installation Completed",
+	})
+}
+
+func (c *InstallController) InstallStartFrontend(ctx http.Context, appID, externalKey string) http.Response {
+	if appID == "" {
+		appID = c.appIDUUID
+	}
+	if externalKey == "" {
+		externalKey = fmt.Sprintf("install-%d", time.Now().Unix())
+	}
+
+	baseURL := frontendBaseURL(ctx, c.appURL)
+	page := frontendPageData{
+		Title:               "AppMax Checkout Demo - Install",
+		Badge:               "Install",
+		Headline:            "Start integration installation",
+		Message:             "Fill in the fields below and use one click to start /install/start.",
+		Submessage:          "The install button opens a new tab and redirects automatically to Breaking Code.",
+		ActiveRoute:         routeInstallStart,
+		PageKind:            "install",
+		Endpoints:           frontendEndpoints(baseURL, routeInstallStart),
+		ShowInstallForm:     true,
+		InstallFormAction:   routeInstallStart,
+		DefaultInstallAppID: appID,
+		DefaultExternalKey:  externalKey,
+		Tips: []string{
+			"The install button sends a GET to /install/start with app_id and external_key.",
+			"If you call /install/start without Accept text/html, the API keeps its original JSON behavior.",
+		},
+	}
+
+	return ctx.Response().View().Make("frontend/page.tmpl", page)
 }
 
 func (c *InstallController) Callback(ctx http.Context) http.Response {

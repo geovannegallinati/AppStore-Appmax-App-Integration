@@ -118,7 +118,7 @@ func TestControllerConstructors_Success(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, checkoutController)
 
-	webhookController, err := controllers.NewWebhookController(noopWebhookService{})
+	webhookController, err := controllers.NewWebhookController(noopWebhookService{}, "https://admin.appmax.com.br", "https://app.example.com")
 	require.NoError(t, err)
 	assert.NotNil(t, webhookController)
 

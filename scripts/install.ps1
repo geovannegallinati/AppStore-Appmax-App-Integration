@@ -111,7 +111,9 @@ function Test-Endpoints {
     $frontendChecks = @(
         @{ Label = "Frontend URL"; Url = "$activeUrl/" },
         @{ Label = "Health URL"; Url = "$activeUrl/health" },
-        @{ Label = "Callback URL"; Url = "$activeUrl/integrations/appmax/callback/install" }
+        @{ Label = "Install URL"; Url = "$activeUrl/install/start" },
+        @{ Label = "Callback URL"; Url = "$activeUrl/integrations/appmax/callback/install" },
+        @{ Label = "Webhook URL"; Url = "$activeUrl/webhooks/appmax" }
     )
     foreach ($check in $frontendChecks) {
         try {
@@ -131,7 +133,9 @@ function Test-Endpoints {
 
     Write-Host "  Frontend URL: $activeUrl/"
     Write-Host "  Health URL: $activeUrl/health"
+    Write-Host "  Install URL: $activeUrl/install/start"
     Write-Host "  Callback URL: $activeUrl/integrations/appmax/callback/install"
+    Write-Host "  Webhook URL: $activeUrl/webhooks/appmax"
 
     return $true
 }

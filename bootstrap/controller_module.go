@@ -36,7 +36,7 @@ func NewControllerModule(cfg AppmaxConfig, services *ServiceModule) (*Controller
 		return nil, err
 	}
 
-	webhookController, err := controllers.NewWebhookController(services.WebhookService)
+	webhookController, err := controllers.NewWebhookController(services.WebhookService, cfg.AdminURL, cfg.AppPublicURL)
 	if err != nil {
 		return nil, err
 	}
