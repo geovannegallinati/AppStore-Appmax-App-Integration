@@ -38,7 +38,7 @@ func (c *MerchantAuthController) SyncToken(ctx http.Context) http.Response {
 	token, err := c.tokenManager.MerchantToken(ctx.Context(), inst)
 	if err != nil {
 		facades.Log().Errorf("merchant_auth_controller: merchant token fetch failed for key %s: %v", inst.ExternalKey, err)
-		return ctx.Response().Json(upstreamErrorStatus(err, 502), responses.MessageResponse{Message: upstreamErrorMessage(err, "failed to fetch merchant token")})
+		return ctx.Response().Json(UpstreamErrorStatus(err, 502), responses.MessageResponse{Message: UpstreamErrorMessage(err, "failed to fetch merchant token")})
 	}
 
 	return ctx.Response().Json(200, responses.MerchantTokenSyncResponse{

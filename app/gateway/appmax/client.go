@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	defaultHTTPTimeout = 90 * time.Second
-	defaultRetryWait   = 200 * time.Millisecond
+	DefaultHTTPTimeout = 90 * time.Second
+	DefaultRetryWait   = 200 * time.Millisecond
 )
 
 type ClientOptions struct {
@@ -53,7 +53,7 @@ func NewClientWithOptions(authURL, apiURL string, options ClientOptions) (*Clien
 	httpClient := buildHTTPClient(options)
 	retryWait := options.RetryWait
 	if retryWait <= 0 {
-		retryWait = defaultRetryWait
+		retryWait = DefaultRetryWait
 	}
 	retryMax := options.RetryMax
 	if retryMax < 0 {
@@ -83,7 +83,7 @@ func buildHTTPClient(options ClientOptions) *http.Client {
 
 	timeout := options.Timeout
 	if timeout <= 0 {
-		timeout = defaultHTTPTimeout
+		timeout = DefaultHTTPTimeout
 	}
 
 	mutated := false
@@ -107,4 +107,20 @@ func buildHTTPClient(options ClientOptions) *http.Client {
 func cloneHTTPClient(client *http.Client) *http.Client {
 	clone := *client
 	return &clone
+}
+
+func (c *Client) RetryMax() int {
+	return c.retryMax
+}
+
+func (c *Client) RetryWait() time.Duration {
+	return c.retryWait
+}
+
+func (c *Client) HTTPClientTimeout() time.Duration {
+	return c.httpClient.Timeout
+}
+
+func (c *Client) HTTPClientTransport() http.RoundTripper {
+	return c.httpClient.Transport
 }

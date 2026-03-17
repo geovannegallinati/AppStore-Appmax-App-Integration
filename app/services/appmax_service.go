@@ -125,6 +125,7 @@ type UpsellInput struct {
 type UpsellResult struct {
 	Message     string
 	RedirectURL string
+	OrderID     int
 }
 
 type GetOrderResult struct {
@@ -309,12 +310,12 @@ func (s *appmaxService) CreditCard(ctx context.Context, inst *models.Installatio
 			}
 			return callErr
 		}
-		if resp.Data.Payment.PayReference == "" {
+		if resp.Data.Payment.Status == "" {
 			return ErrPaymentDeclined
 		}
 		result = CreditCardResult{
-			PaymentID:  0,
-			Status:     "aprovado",
+			PaymentID:  resp.Data.Payment.ID,
+			Status:     resp.Data.Payment.Status,
 			UpsellHash: resp.Data.Payment.UpsellHash,
 		}
 		return nil
@@ -456,6 +457,7 @@ func (s *appmaxService) Upsell(ctx context.Context, inst *models.Installation, i
 		result = UpsellResult{
 			Message:     resp.Data.Message,
 			RedirectURL: resp.Data.RedirectURL,
+			OrderID:     resp.Data.Order.ID,
 		}
 		return nil
 	})

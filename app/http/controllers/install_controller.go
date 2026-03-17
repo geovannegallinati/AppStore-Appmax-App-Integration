@@ -141,7 +141,7 @@ func (c *InstallController) Start(ctx http.Context) http.Response {
 	hash, err := c.appmaxSvc.Authorize(appmaxCtx, appID, externalKey, callbackURL)
 	if err != nil {
 		facades.Log().Errorf("install_controller: authorize failed for key %s: %v", externalKey, err)
-		return ctx.Response().Json(upstreamErrorStatus(err, 502), responses.MessageResponse{Message: upstreamErrorMessage(err, "failed to initiate installation")})
+		return ctx.Response().Json(UpstreamErrorStatus(err, 502), responses.MessageResponse{Message: UpstreamErrorMessage(err, "failed to initiate installation")})
 	}
 
 	stateJSON, err := json.Marshal(installState{AppID: appID, ExternalKey: externalKey})
@@ -197,7 +197,7 @@ func (c *InstallController) CallbackGuide(ctx http.Context) http.Response {
 	clientID, clientSecret, err := c.appmaxSvc.GenerateMerchantCreds(appmaxCtx, token)
 	if err != nil {
 		facades.Log().Errorf("install_controller: generate merchant creds failed for token %s: %v", token, err)
-		return ctx.Response().Json(upstreamErrorStatus(err, 502), responses.MessageResponse{Message: upstreamErrorMessage(err, "failed to generate merchant credentials")})
+		return ctx.Response().Json(UpstreamErrorStatus(err, 502), responses.MessageResponse{Message: UpstreamErrorMessage(err, "failed to generate merchant credentials")})
 	}
 
 	inst, created, err := c.installSvc.Upsert(ctx.Context(), services.UpsertInstallationInput{

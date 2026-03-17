@@ -176,8 +176,10 @@ type CreditCardRequest struct {
 
 type creditCardDataPayload struct {
 	Payment struct {
+		ID           int    `json:"id"`
 		PayReference string `json:"pay_reference"`
 		UpsellHash   string `json:"upsell_hash,omitempty"`
+		Status       string `json:"status"`
 	} `json:"payment"`
 }
 
@@ -274,6 +276,10 @@ type UpsellResponse struct {
 	Data struct {
 		Message     string `json:"message"`
 		RedirectURL string `json:"redirect_url"`
+		Order       struct {
+			ID     int    `json:"id"`
+			Status string `json:"status"`
+		} `json:"order"`
 	} `json:"data"`
 }
 

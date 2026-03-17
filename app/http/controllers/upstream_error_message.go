@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-const refundFailedMessage = "refund request failed"
+const RefundFailedMessage = "refund request failed"
 
 var unexpectedStatusPattern = regexp.MustCompile(`unexpected status (\d{3})`)
 
@@ -20,7 +20,7 @@ type upstreamMessageError interface {
 	UpstreamMessage() string
 }
 
-func upstreamErrorStatus(err error, fallback int) int {
+func UpstreamErrorStatus(err error, fallback int) int {
 	if err == nil {
 		return fallback
 	}
@@ -39,7 +39,7 @@ func upstreamErrorStatus(err error, fallback int) int {
 	return fallback
 }
 
-func upstreamErrorMessage(err error, fallback string) string {
+func UpstreamErrorMessage(err error, fallback string) string {
 	if err == nil {
 		return fallback
 	}
@@ -59,8 +59,8 @@ func upstreamErrorMessage(err error, fallback string) string {
 	return message
 }
 
-func refundErrorMessage(err error) string {
-	return upstreamErrorMessage(err, refundFailedMessage)
+func RefundErrorMessage(err error) string {
+	return UpstreamErrorMessage(err, RefundFailedMessage)
 }
 
 func extractUpstreamMessage(raw string) string {
