@@ -1,5 +1,7 @@
 package contracts
 
+import "encoding/json"
+
 type TokenResponse struct {
 	AccessToken string `json:"access_token"`
 	TokenType   string `json:"token_type"`
@@ -66,12 +68,22 @@ type CreateCustomerRequest struct {
 	Tracking       *Tracking `json:"tracking,omitempty"`
 }
 
+type createCustomerDataPayload struct {
+	Customer struct {
+		ID int `json:"id"`
+	} `json:"customer"`
+}
+
+func (d *createCustomerDataPayload) UnmarshalJSON(b []byte) error {
+	if len(b) > 0 && b[0] == '[' {
+		return nil
+	}
+	type alias createCustomerDataPayload
+	return json.Unmarshal(b, (*alias)(d))
+}
+
 type CreateCustomerResponse struct {
-	Data struct {
-		Customer struct {
-			ID int `json:"id"`
-		} `json:"customer"`
-	} `json:"data"`
+	Data createCustomerDataPayload `json:"data"`
 }
 
 type CreateOrderRequest struct {
@@ -82,13 +94,23 @@ type CreateOrderRequest struct {
 	Products      []Product `json:"products"`
 }
 
+type createOrderDataPayload struct {
+	Order struct {
+		ID     int    `json:"id"`
+		Status string `json:"status"`
+	} `json:"order"`
+}
+
+func (d *createOrderDataPayload) UnmarshalJSON(b []byte) error {
+	if len(b) > 0 && b[0] == '[' {
+		return nil
+	}
+	type alias createOrderDataPayload
+	return json.Unmarshal(b, (*alias)(d))
+}
+
 type CreateOrderResponse struct {
-	Data struct {
-		Order struct {
-			ID     int    `json:"id"`
-			Status string `json:"status"`
-		} `json:"order"`
-	} `json:"data"`
+	Data createOrderDataPayload `json:"data"`
 }
 
 type GetOrderResponse struct {
@@ -138,22 +160,39 @@ type CreditCardData struct {
 	SoftDescriptor       string `json:"soft_descriptor,omitempty"`
 }
 
+type Subscription struct {
+	Interval      string `json:"interval"`
+	IntervalCount int    `json:"interval_count"`
+}
+
 type CreditCardRequest struct {
 	OrderID     int `json:"order_id"`
 	CustomerID  int `json:"customer_id"`
 	PaymentData struct {
-		CreditCard CreditCardData `json:"credit_card"`
+		CreditCard   CreditCardData `json:"credit_card"`
+		Subscription *Subscription  `json:"subscription,omitempty"`
 	} `json:"payment_data"`
 }
 
+type creditCardDataPayload struct {
+	Payment struct {
+		ID           int    `json:"id"`
+		PayReference string `json:"pay_reference"`
+		UpsellHash   string `json:"upsell_hash,omitempty"`
+		Status       string `json:"status"`
+	} `json:"payment"`
+}
+
+func (d *creditCardDataPayload) UnmarshalJSON(b []byte) error {
+	if len(b) > 0 && b[0] == '[' {
+		return nil
+	}
+	type alias creditCardDataPayload
+	return json.Unmarshal(b, (*alias)(d))
+}
+
 type CreditCardResponse struct {
-	Data struct {
-		Payment struct {
-			ID         int    `json:"id"`
-			Status     string `json:"status"`
-			UpsellHash string `json:"upsell_hash,omitempty"`
-		} `json:"payment"`
-	} `json:"data"`
+	Data creditCardDataPayload `json:"data"`
 }
 
 type PixRequest struct {
@@ -162,16 +201,27 @@ type PixRequest struct {
 		Pix struct {
 			DocumentNumber string `json:"document_number"`
 		} `json:"pix"`
+		Subscription *Subscription `json:"subscription,omitempty"`
 	} `json:"payment_data"`
 }
 
+type pixDataPayload struct {
+	Payment struct {
+		QRCode string `json:"pix_qrcode"`
+		EMV    string `json:"pix_emv"`
+	} `json:"payment"`
+}
+
+func (d *pixDataPayload) UnmarshalJSON(b []byte) error {
+	if len(b) > 0 && b[0] == '[' {
+		return nil
+	}
+	type alias pixDataPayload
+	return json.Unmarshal(b, (*alias)(d))
+}
+
 type PixResponse struct {
-	Data struct {
-		Payment struct {
-			QRCode string `json:"qr_code"`
-			EMV    string `json:"emv"`
-		} `json:"payment"`
-	} `json:"data"`
+	Data pixDataPayload `json:"data"`
 }
 
 type BoletoRequest struct {
@@ -186,8 +236,8 @@ type BoletoRequest struct {
 type BoletoResponse struct {
 	Data struct {
 		Payment struct {
-			PDFURL    string `json:"pdf_url"`
-			Digitavel string `json:"digitavel"`
+			PDFURL    string `json:"boleto_link_pdf"`
+			Digitavel string `json:"boleto_digitable_line"`
 		} `json:"payment"`
 	} `json:"data"`
 }
@@ -205,7 +255,9 @@ type InstallmentItem struct {
 }
 
 type InstallmentsResponse struct {
-	Data []InstallmentItem `json:"data"`
+	Data struct {
+		Parcels map[string]float64 `json:"parcels"`
+	} `json:"data"`
 }
 
 type RefundRequest struct {
@@ -222,7 +274,9 @@ type UpsellRequest struct {
 
 type UpsellResponse struct {
 	Data struct {
-		Order struct {
+		Message     string `json:"message"`
+		RedirectURL string `json:"redirect_url"`
+		Order       struct {
 			ID     int    `json:"id"`
 			Status string `json:"status"`
 		} `json:"order"`

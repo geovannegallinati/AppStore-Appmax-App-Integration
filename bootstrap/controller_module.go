@@ -7,9 +7,10 @@ import (
 )
 
 type ControllerModule struct {
-	InstallController  *controllers.InstallController
-	CheckoutController *controllers.CheckoutController
-	WebhookController  *controllers.WebhookController
+	InstallController      *controllers.InstallController
+	MerchantAuthController *controllers.MerchantAuthController
+	CheckoutController     *controllers.CheckoutController
+	WebhookController      *controllers.WebhookController
 }
 
 func NewControllerModule(cfg AppmaxConfig, services *ServiceModule) (*ControllerModule, error) {
@@ -25,6 +26,11 @@ func NewControllerModule(cfg AppmaxConfig, services *ServiceModule) (*Controller
 		return nil, err
 	}
 
+	merchantAuthController, err := controllers.NewMerchantAuthController(services.TokenManager)
+	if err != nil {
+		return nil, err
+	}
+
 	checkoutController, err := controllers.NewCheckoutController(services.CheckoutService)
 	if err != nil {
 		return nil, err
@@ -36,8 +42,9 @@ func NewControllerModule(cfg AppmaxConfig, services *ServiceModule) (*Controller
 	}
 
 	return &ControllerModule{
-		InstallController:  installController,
-		CheckoutController: checkoutController,
-		WebhookController:  webhookController,
+		InstallController:      installController,
+		MerchantAuthController: merchantAuthController,
+		CheckoutController:     checkoutController,
+		WebhookController:      webhookController,
 	}, nil
 }

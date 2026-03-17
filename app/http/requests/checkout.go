@@ -48,19 +48,32 @@ type CheckoutCreditCardPayment struct {
 	SoftDescriptor       string `json:"soft_descriptor"`
 }
 
+type CheckoutCreateOrderRequest struct {
+	Customer Customer `json:"customer"`
+	Order    Order    `json:"order"`
+}
+
 type CheckoutCreditCardRequest struct {
-	Customer Customer                  `json:"customer"`
-	Order    Order                     `json:"order"`
-	Payment  CheckoutCreditCardPayment `json:"payment"`
+	CustomerID   *int                      `json:"customer_id,omitempty"`
+	OrderID      *int                      `json:"order_id,omitempty"`
+	Customer     Customer                  `json:"customer"`
+	Order        Order                     `json:"order"`
+	Payment      CheckoutCreditCardPayment `json:"payment"`
+	Subscription *CheckoutSubscription     `json:"subscription,omitempty"`
 }
 
 type CheckoutPixRequest struct {
-	Customer       Customer `json:"customer"`
-	Order          Order    `json:"order"`
-	DocumentNumber string   `json:"document_number"`
+	CustomerID     *int                  `json:"customer_id,omitempty"`
+	OrderID        *int                  `json:"order_id,omitempty"`
+	Customer       Customer              `json:"customer"`
+	Order          Order                 `json:"order"`
+	DocumentNumber string                `json:"document_number"`
+	Subscription   *CheckoutSubscription `json:"subscription,omitempty"`
 }
 
 type CheckoutBoletoRequest struct {
+	CustomerID     *int     `json:"customer_id,omitempty"`
+	OrderID        *int     `json:"order_id,omitempty"`
 	Customer       Customer `json:"customer"`
 	Order          Order    `json:"order"`
 	DocumentNumber string   `json:"document_number"`
@@ -70,4 +83,28 @@ type CheckoutRefundRequest struct {
 	OrderID int    `json:"order_id"`
 	Type    string `json:"type"`
 	Value   int    `json:"value"`
+}
+
+type CheckoutSubscription struct {
+	Interval      string `json:"interval"`
+	IntervalCount int    `json:"interval_count"`
+}
+
+type CheckoutTokenizeRequest struct {
+	Number          string `json:"number"`
+	CVV             string `json:"cvv"`
+	ExpirationMonth string `json:"expiration_month"`
+	ExpirationYear  string `json:"expiration_year"`
+	HolderName      string `json:"holder_name"`
+}
+
+type CheckoutTrackingRequest struct {
+	OrderID              int    `json:"order_id"`
+	ShippingTrackingCode string `json:"shipping_tracking_code"`
+}
+
+type CheckoutUpsellRequest struct {
+	UpsellHash    string    `json:"upsell_hash"`
+	ProductsValue int       `json:"products_value"`
+	Products      []Product `json:"products"`
 }

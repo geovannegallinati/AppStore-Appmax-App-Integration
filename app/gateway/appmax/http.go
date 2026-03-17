@@ -7,10 +7,30 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/goravel/framework/facades"
 )
+
+type upstreamHTTPError struct {
+	statusCode   int
+	traceHeaders string
+	body         string
+	message      string
+}
+
+func (e *upstreamHTTPError) Error() string {
+	return fmt.Sprintf("unexpected status %d%s: %s", e.statusCode, e.traceHeaders, e.body)
+}
+
+func (e *upstreamHTTPError) HTTPStatus() int {
+	return e.statusCode
+}
+
+func (e *upstreamHTTPError) UpstreamMessage() string {
+	return e.message
+}
 
 func (c *Client) do(ctx context.Context, method, endpoint string, body any, bearerToken string) (*http.Response, error) {
 	var payload []byte
@@ -105,9 +125,35 @@ func checkStatus(resp *http.Response, expected ...int) error {
 		}
 	}
 
-	err := fmt.Errorf("unexpected status %d%s: %s", resp.StatusCode, traceHeaders, string(data))
+	body := strings.TrimSpace(string(data))
+	message := parseUpstreamMessageFromBody(data)
+	err := &upstreamHTTPError{
+		statusCode:   resp.StatusCode,
+		traceHeaders: traceHeaders,
+		body:         body,
+		message:      message,
+	}
 	facades.Log().Errorf("[appmax] %v", err)
 	return err
+}
+
+func parseUpstreamMessageFromBody(data []byte) string {
+	var payload struct {
+		Message string `json:"message"`
+		Errors  struct {
+			Message string `json:"message"`
+		} `json:"errors"`
+	}
+
+	if err := json.Unmarshal(data, &payload); err != nil {
+		return ""
+	}
+
+	if payload.Errors.Message != "" {
+		return payload.Errors.Message
+	}
+
+	return payload.Message
 }
 
 func waitWithContext(ctx context.Context, wait time.Duration) bool {

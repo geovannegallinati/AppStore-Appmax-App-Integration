@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"sort"
+	"strconv"
 )
 
 func (c *Client) CreditCard(ctx context.Context, merchantToken string, req CreditCardRequest) (CreditCardResponse, error) {
@@ -39,7 +41,26 @@ func (c *Client) Installments(ctx context.Context, merchantToken string, req Ins
 		return nil, fmt.Errorf("installments: %w", err)
 	}
 
-	return out.Data, nil
+	keys := make([]int, 0, len(out.Data.Parcels))
+	for k := range out.Data.Parcels {
+		n, convErr := strconv.Atoi(k)
+		if convErr == nil {
+			keys = append(keys, n)
+		}
+	}
+	sort.Ints(keys)
+
+	items := make([]InstallmentItem, 0, len(keys))
+	for _, n := range keys {
+		v := out.Data.Parcels[strconv.Itoa(n)]
+		items = append(items, InstallmentItem{
+			Installments: n,
+			Value:        v,
+			TotalValue:   v * float64(n),
+		})
+	}
+
+	return items, nil
 }
 
 func (c *Client) Refund(ctx context.Context, merchantToken string, req RefundRequest) error {

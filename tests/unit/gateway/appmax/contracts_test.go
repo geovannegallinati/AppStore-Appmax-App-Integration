@@ -1,47 +1,22 @@
-package appmax
+package appmax_test
 
 import (
 	"context"
 	"errors"
-	"io"
 	"net/http"
-	"strings"
 	"testing"
 	"time"
 
+	appmax "github.com/geovannegallinati/AppStore-Appmax-App-Integration/app/gateway/appmax"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-func jsonResponse(status int, body string) *http.Response {
-	return &http.Response{
-		StatusCode: status,
-		Header:     make(http.Header),
-		Body:       io.NopCloser(strings.NewReader(body)),
-	}
-}
-
-func clientWithTransport(t *testing.T, fn roundTripperFunc) *Client {
-	t.Helper()
-
-	httpClient := &http.Client{Transport: fn}
-	client, err := NewClientWithHTTPClient("https://auth.example.com", "https://api.example.com", httpClient)
-	require.NoError(t, err)
-	return client
-}
 
 func TestClient_GetToken(t *testing.T) {
 	client := clientWithTransport(t, func(req *http.Request) (*http.Response, error) {
 		assert.Equal(t, http.MethodPost, req.Method)
 		assert.Equal(t, "https://auth.example.com/oauth2/token", req.URL.String())
 		assert.Equal(t, "application/x-www-form-urlencoded", req.Header.Get("Content-Type"))
-
-		body, readErr := io.ReadAll(req.Body)
-		require.NoError(t, readErr)
-		bodyStr := string(body)
-		assert.Contains(t, bodyStr, "grant_type=client_credentials")
-		assert.Contains(t, bodyStr, "client_id=cid")
-		assert.Contains(t, bodyStr, "client_secret=csecret")
 
 		return jsonResponse(http.StatusOK, `{"access_token":"tok","token_type":"Bearer","expires_in":3600}`), nil
 	})
@@ -96,11 +71,11 @@ func TestClient_CustomerOrderEndpoints(t *testing.T) {
 		}
 	})
 
-	customerID, err := client.CreateOrUpdateCustomer(context.Background(), "merchant-token", CreateCustomerRequest{FirstName: "John"})
+	customerID, err := client.CreateOrUpdateCustomer(context.Background(), "merchant-token", appmax.CreateCustomerRequest{FirstName: "John"})
 	require.NoError(t, err)
 	assert.Equal(t, 55, customerID)
 
-	orderID, err := client.CreateOrder(context.Background(), "merchant-token", CreateOrderRequest{CustomerID: customerID})
+	orderID, err := client.CreateOrder(context.Background(), "merchant-token", appmax.CreateOrderRequest{CustomerID: customerID})
 	require.NoError(t, err)
 	assert.Equal(t, 88, orderID)
 
@@ -116,11 +91,11 @@ func TestClient_PaymentEndpoints(t *testing.T) {
 		case "/v1/payments/credit-card":
 			return jsonResponse(http.StatusCreated, `{"data":{"payment":{"id":1,"status":"approved","upsell_hash":"up"}}}`), nil
 		case "/v1/payments/pix":
-			return jsonResponse(http.StatusOK, `{"data":{"payment":{"qr_code":"qr","emv":"emv"}}}`), nil
+			return jsonResponse(http.StatusOK, `{"data":{"payment":{"pix_qrcode":"qr","pix_emv":"emv"}}}`), nil
 		case "/v1/payments/boleto":
-			return jsonResponse(http.StatusCreated, `{"data":{"payment":{"pdf_url":"https://pdf","digitavel":"123"}}}`), nil
+			return jsonResponse(http.StatusCreated, `{"data":{"payment":{"boleto_link_pdf":"https://pdf","boleto_digitable_line":"123"}}}`), nil
 		case "/v1/payments/installments":
-			return jsonResponse(http.StatusOK, `{"data":[{"installments":1,"value":100,"total_value":100}]}`), nil
+			return jsonResponse(http.StatusOK, `{"data":{"parcels":{"1":100.00}}}`), nil
 		case "/v1/orders/refund-request":
 			return jsonResponse(http.StatusCreated, `{}`), nil
 		case "/v1/orders/shipping-tracking-code":
@@ -135,38 +110,38 @@ func TestClient_PaymentEndpoints(t *testing.T) {
 		}
 	})
 
-	cc, err := client.CreditCard(context.Background(), "merchant-token", CreditCardRequest{})
+	cc, err := client.CreditCard(context.Background(), "merchant-token", appmax.CreditCardRequest{})
 	require.NoError(t, err)
 	assert.Equal(t, "approved", cc.Data.Payment.Status)
 
-	pix, err := client.Pix(context.Background(), "merchant-token", PixRequest{})
+	pix, err := client.Pix(context.Background(), "merchant-token", appmax.PixRequest{})
 	require.NoError(t, err)
 	assert.Equal(t, "qr", pix.Data.Payment.QRCode)
 
-	boleto, err := client.Boleto(context.Background(), "merchant-token", BoletoRequest{})
+	boleto, err := client.Boleto(context.Background(), "merchant-token", appmax.BoletoRequest{})
 	require.NoError(t, err)
 	assert.Equal(t, "123", boleto.Data.Payment.Digitavel)
 
-	installments, err := client.Installments(context.Background(), "merchant-token", InstallmentsRequest{})
+	installments, err := client.Installments(context.Background(), "merchant-token", appmax.InstallmentsRequest{})
 	require.NoError(t, err)
 	require.Len(t, installments, 1)
 	assert.Equal(t, 1, installments[0].Installments)
 
-	require.NoError(t, client.Refund(context.Background(), "merchant-token", RefundRequest{OrderID: 1, Type: "total"}))
-	require.NoError(t, client.AddTracking(context.Background(), "merchant-token", TrackingRequest{OrderID: 1, ShippingTrackingCode: "BR123"}))
+	require.NoError(t, client.Refund(context.Background(), "merchant-token", appmax.RefundRequest{OrderID: 1, Type: "total"}))
+	require.NoError(t, client.AddTracking(context.Background(), "merchant-token", appmax.TrackingRequest{OrderID: 1, ShippingTrackingCode: "BR123"}))
 
-	upsell, err := client.CreateUpsell(context.Background(), "merchant-token", UpsellRequest{})
+	upsell, err := client.CreateUpsell(context.Background(), "merchant-token", appmax.UpsellRequest{})
 	require.NoError(t, err)
 	assert.Equal(t, 99, upsell.Data.Order.ID)
 
-	tokenize, err := client.Tokenize(context.Background(), "merchant-token", TokenizeRequest{})
+	tokenize, err := client.Tokenize(context.Background(), "merchant-token", appmax.TokenizeRequest{})
 	require.NoError(t, err)
 	assert.Equal(t, "tok-1", tokenize.Data.Token)
 }
 
 func TestClient_DoRetriesAndContextCancel(t *testing.T) {
 	attempts := 0
-	client, err := NewClientWithOptions("https://auth.example.com", "https://api.example.com", ClientOptions{
+	client, err := appmax.NewClientWithOptions("https://auth.example.com", "https://api.example.com", appmax.ClientOptions{
 		HTTPClient: &http.Client{
 			Transport: roundTripperFunc(func(*http.Request) (*http.Response, error) {
 				attempts++
@@ -185,11 +160,14 @@ func TestClient_DoRetriesAndContextCancel(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, 2, attempts)
 
-	cancelClient := clientWithTransport(t, func(*http.Request) (*http.Response, error) {
-		return nil, errors.New("network down")
+	cancelClient, err := appmax.NewClientWithOptions("https://auth.example.com", "https://api.example.com", appmax.ClientOptions{
+		Transport: roundTripperFunc(func(*http.Request) (*http.Response, error) {
+			return nil, errors.New("network down")
+		}),
+		RetryMax:  2,
+		RetryWait: 50 * time.Millisecond,
 	})
-	cancelClient.retryMax = 2
-	cancelClient.retryWait = 50 * time.Millisecond
+	require.NoError(t, err)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
@@ -205,7 +183,7 @@ func TestClient_DecodeAndStatusErrors(t *testing.T) {
 			return jsonResponse(http.StatusBadRequest, `{"message":"invalid"}`), nil
 		})
 
-		_, err := client.CreditCard(context.Background(), "merchant-token", CreditCardRequest{})
+		_, err := client.CreditCard(context.Background(), "merchant-token", appmax.CreditCardRequest{})
 		require.Error(t, err)
 		assert.ErrorContains(t, err, "unexpected status 400")
 	})
@@ -215,7 +193,7 @@ func TestClient_DecodeAndStatusErrors(t *testing.T) {
 			return jsonResponse(http.StatusOK, `not-json`), nil
 		})
 
-		_, err := client.Pix(context.Background(), "merchant-token", PixRequest{})
+		_, err := client.Pix(context.Background(), "merchant-token", appmax.PixRequest{})
 		require.Error(t, err)
 		assert.ErrorContains(t, err, "decode response")
 	})

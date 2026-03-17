@@ -235,7 +235,7 @@ func TestAppmaxService_PaymentsAndOperations(t *testing.T) {
 			assert.Equal(t, "4000000000000010", req.PaymentData.CreditCard.Number)
 			var out gatewayappmax.CreditCardResponse
 			out.Data.Payment.ID = 900
-			out.Data.Payment.Status = "approved"
+			out.Data.Payment.PayReference = "mock-ref"
 			out.Data.Payment.UpsellHash = "up-1"
 			return out, nil
 		},
@@ -304,7 +304,7 @@ func TestAppmaxService_PaymentsAndOperations(t *testing.T) {
 	})
 	require.NoError(t, err)
 	assert.Equal(t, 900, cc.PaymentID)
-	assert.Equal(t, "approved", cc.Status)
+	assert.Equal(t, "aprovado", cc.Status)
 	assert.Equal(t, "up-1", cc.UpsellHash)
 
 	pix, err := svc.Pix(context.Background(), inst, services.PixInput{OrderID: 88, DocumentNumber: "123"})

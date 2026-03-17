@@ -1,7 +1,9 @@
-APP_PORT   ?= $(shell grep -E '^APP_PORT=' .env 2>/dev/null | cut -d= -f2 || echo 8080)
-NGROK_URL  ?= $(shell grep -E '^NGROK_URL=' .env 2>/dev/null | cut -d= -f2 || echo "")
-NGROK_AUTHTOKEN ?= $(shell grep -E '^NGROK_AUTHTOKEN=' .env 2>/dev/null | cut -d= -f2 || echo "")
-BASE_URL    = http://localhost:$(APP_PORT)
+APP_PORT         ?= $(shell grep -E '^APP_PORT=' .env 2>/dev/null | cut -d= -f2 || echo 8080)
+APP_URL          ?= $(shell grep -E '^APP_URL=' .env 2>/dev/null | head -n1 | cut -d= -f2- | tr -d '\r' | sed -e "s/^['\"]//" -e "s/['\"]$$//" -e "s|/*$$||" -e "s|:[0-9][0-9]*$$||")
+NGROK_URL        ?= $(shell grep -E '^NGROK_URL=' .env 2>/dev/null | cut -d= -f2 || echo "")
+NGROK_AUTHTOKEN  ?= $(shell grep -E '^NGROK_AUTHTOKEN=' .env 2>/dev/null | cut -d= -f2 || echo "")
+APPMAX_APP_ID_UUID ?= $(shell grep -E '^APPMAX_APP_ID_UUID=' .env 2>/dev/null | cut -d= -f2 || echo "")
+BASE_URL    = $(APP_URL):$(APP_PORT)
 HEALTH_URL  = $(BASE_URL)/health
 
 COMPOSE = docker compose -f docker-compose.yml
@@ -44,7 +46,8 @@ logs:
 	$(COMPOSE) logs -f
 
 health:
-	@for i in $$(seq 1 30); do \
+	@sleep 5
+	@for i in $$(seq 1 60); do \
 		if curl -sf $(HEALTH_URL) > /dev/null 2>&1; then \
 			exit 0; \
 		fi; \
@@ -57,6 +60,11 @@ validate: health
 	@if [ -z "$(NGROK_AUTHTOKEN)" ]; then \
 		echo "  [FAIL] NGROK_AUTHTOKEN is empty."; \
 		echo "  Create a ngrok account at https://dashboard.ngrok.com/signup and set NGROK_AUTHTOKEN in .env"; \
+		exit 1; \
+	fi
+	@if [ -z "$(APPMAX_APP_ID_UUID)" ]; then \
+		echo "  [FAIL] APPMAX_APP_ID_UUID is empty."; \
+		echo "  Set APPMAX_APP_ID_UUID in .env with your app's UUID from the Appmax AppStore."; \
 		exit 1; \
 	fi
 	@status=$$(curl -o /dev/null -sw '%{http_code}' $(BASE_URL)/install/start 2>/dev/null); \

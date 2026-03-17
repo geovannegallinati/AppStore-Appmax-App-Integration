@@ -37,8 +37,9 @@ if ($AppPort -eq 0) {
     $AppPort = if ($env:APP_PORT) { [int]$env:APP_PORT } else { 8080 }
 }
 
-$NgrokUrl   = $env:NGROK_URL
-$NgrokAuthtoken = $env:NGROK_AUTHTOKEN
+$NgrokUrl        = $env:NGROK_URL
+$NgrokAuthtoken  = $env:NGROK_AUTHTOKEN
+$AppmaxAppIdUUID = $env:APPMAX_APP_ID_UUID
 $BaseUrl    = "http://localhost:$AppPort"
 $HealthUrl  = "$BaseUrl/health"
 $ComposeFiles = @("-f", "docker-compose.yml")
@@ -60,6 +61,12 @@ function Test-Endpoints {
     if (-not $NgrokAuthtoken) {
         Write-Host "  [FAIL] NGROK_AUTHTOKEN is empty."
         Write-Host "  Create a ngrok account at https://dashboard.ngrok.com/signup and set NGROK_AUTHTOKEN in .env"
+        return $false
+    }
+
+    if (-not $AppmaxAppIdUUID) {
+        Write-Host "  [FAIL] APPMAX_APP_ID_UUID is empty."
+        Write-Host "  Set APPMAX_APP_ID_UUID in .env with your app's UUID from the Appmax AppStore."
         return $false
     }
 
@@ -137,6 +144,10 @@ if ($LASTEXITCODE -ne 0) { Pop-Location; exit $LASTEXITCODE }
 
 Write-Host "==> Starting stack [air hot reload]..."
 & docker compose @ComposeFiles up -d --build
+if ($LASTEXITCODE -ne 0) { Pop-Location; exit $LASTEXITCODE }
+
+Write-Host "==> Running migrations..."
+& docker compose @ComposeFiles exec app ./tmp/server artisan migrate
 if ($LASTEXITCODE -ne 0) { Pop-Location; exit $LASTEXITCODE }
 
 if (-not (Wait-ForHealth)) {

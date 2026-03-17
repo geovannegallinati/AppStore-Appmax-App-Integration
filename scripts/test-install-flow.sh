@@ -14,7 +14,7 @@ set +a
 
 APP_PUBLIC_URL="${NGROK_URL:-${APP_URL:-}}"
 
-for var in APP_ID_UUID APP_PUBLIC_URL; do
+for var in APPMAX_APP_ID_UUID APP_PUBLIC_URL; do
   if [ -z "${!var:-}" ]; then
     echo "ERROR: $var is not set (set NGROK_URL or APP_URL in .env)"
     exit 1
@@ -31,7 +31,7 @@ while true; do
   sep
 
   EXTERNAL_KEY="test-curl-$(date +%s)"
-  START_URL="${APP_PUBLIC_URL}/install/start?app_id=${APP_ID_UUID}&external_key=${EXTERNAL_KEY}"
+  START_URL="${APP_PUBLIC_URL}/install/start?app_id=${APPMAX_APP_ID_UUID}&external_key=${EXTERNAL_KEY}"
 
   echo ""
   echo "[$(ts)] STEP 1 — /install/start (salva estado no Redis)"
@@ -127,7 +127,7 @@ while true; do
     echo "  WARN: callback não completou — usando dados fictícios para testar endpoint isolado"
   fi
 
-  HC_PAYLOAD="{\"app_id\":\"${APP_ID_UUID}\",\"client_id\":\"${HC_CLIENT_ID}\",\"client_secret\":\"${HC_SECRET}\",\"external_key\":\"hc-probe-$(date +%s)\"}"
+  HC_PAYLOAD="{\"app_id\":\"${APPMAX_APP_ID_UUID}\",\"client_id\":\"${HC_CLIENT_ID}\",\"client_secret\":\"${HC_SECRET}\",\"external_key\":\"hc-probe-$(date +%s)\"}"
   echo "  POST ${APP_PUBLIC_URL}/integrations/appmax/callback/install"
   echo "  Body: $HC_PAYLOAD"
 

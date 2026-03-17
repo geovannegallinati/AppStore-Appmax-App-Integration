@@ -10,6 +10,10 @@ import (
 )
 
 func TestControllerConstructors_RejectNilDependency(t *testing.T) {
+	merchantAuthController, err := controllers.NewMerchantAuthController(nil)
+	require.Error(t, err)
+	assert.Nil(t, merchantAuthController)
+
 	checkoutController, err := controllers.NewCheckoutController(nil)
 	require.Error(t, err)
 	assert.Nil(t, checkoutController)
