@@ -8,9 +8,9 @@ HEALTH_URL  = $(BASE_URL)/health
 
 COMPOSE = docker compose -f docker-compose.yml
 
-.PHONY: install teardown env-init generate-key up down restart logs health validate rename-module migrate
+.PHONY: install teardown env-init generate-key up down restart logs health validate rename-module test migrate
 
-install: env-init generate-key teardown up migrate validate
+install: env-init generate-key teardown up migrate test validate
 	@echo "Stack is ready."
 
 env-init:
@@ -123,6 +123,10 @@ validate: health
 
 rename-module:
 	@bash scripts/rename-module.sh $(NEW)
+
+test:
+	@echo "Running tests inside app container..."
+	$(COMPOSE) exec -T app sh -lc 'PATH=/usr/local/go/bin:/go/bin:$$PATH GOCACHE=/tmp/.gocache go test ./...'
 
 migrate:
 	$(COMPOSE) exec app ./tmp/server artisan migrate

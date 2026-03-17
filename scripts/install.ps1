@@ -154,6 +154,10 @@ Write-Host "==> Running migrations..."
 & docker compose @ComposeFiles exec app ./tmp/server artisan migrate
 if ($LASTEXITCODE -ne 0) { Pop-Location; exit $LASTEXITCODE }
 
+Write-Host "==> Running tests inside app container..."
+& docker compose @ComposeFiles exec app sh -lc "PATH=/usr/local/go/bin:/go/bin:`$PATH GOCACHE=/tmp/.gocache go test ./..."
+if ($LASTEXITCODE -ne 0) { Pop-Location; exit $LASTEXITCODE }
+
 if (-not (Wait-ForHealth)) {
     Write-Host "Healthcheck failed after 30 attempts."
     Pop-Location
