@@ -310,12 +310,12 @@ func (s *appmaxService) CreditCard(ctx context.Context, inst *models.Installatio
 			}
 			return callErr
 		}
-		if resp.Data.Payment.Status == "" {
+		if resp.Data.Payment.PayReference == "" {
 			return ErrPaymentDeclined
 		}
 		result = CreditCardResult{
 			PaymentID:  resp.Data.Payment.ID,
-			Status:     resp.Data.Payment.Status,
+			Status:     "aprovado",
 			UpsellHash: resp.Data.Payment.UpsellHash,
 		}
 		return nil
