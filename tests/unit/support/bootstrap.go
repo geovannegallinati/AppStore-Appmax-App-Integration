@@ -10,6 +10,7 @@ import (
 	contractsfoundation "github.com/goravel/framework/contracts/foundation"
 	"github.com/goravel/framework/facades"
 	"github.com/goravel/framework/foundation"
+	frameworkcache "github.com/goravel/framework/cache"
 	frameworklog "github.com/goravel/framework/log"
 	frameworkvalidation "github.com/goravel/framework/validation"
 	frameworkview "github.com/goravel/framework/view"
@@ -24,7 +25,8 @@ func RunWithFrameworkBootstrap(m *testing.M) int {
 	foundation.Setup().
 		WithProviders(func() []contractsfoundation.ServiceProvider {
 			return []contractsfoundation.ServiceProvider{
-				&frameworklog.ServiceProvider{},
+				&frameworkcache.ServiceProvider{},
+			&frameworklog.ServiceProvider{},
 				&frameworkvalidation.ServiceProvider{},
 				&frameworkview.ServiceProvider{},
 				&goravel_gin.ServiceProvider{},
