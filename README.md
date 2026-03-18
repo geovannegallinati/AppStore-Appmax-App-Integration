@@ -24,8 +24,7 @@ and webhook processing for order status updates.
 
 | Resource | Link |
 |----------|------|
-| Postman API Documentation | <a href="https://www.postman.com/geovannegallinati/appmax-full-integration-suite/documentation/52585908-1b3d2ef6-e083-456c-b4c1-fdc46a37f771?sideView=agentMode" target="_blank">Open in Postman ↗</a> |
-| Postman Collection | <a href="https://www.postman.com/geovannegallinati/appmax-full-integration-suite/collection/52585908-1b3d2ef6-e083-456c-b4c1-fdc46a37f771?tab=overview&sideView=agentMode" target="_blank">View Collection ↗</a> |
+| Run in Postman | <a href="https://www.postman.com/geovannegallinati/appmax-full-integration-suite/collection/52585908-1b3d2ef6-e083-456c-b4c1-fdc46a37f771?tab=overview&sideView=agentMode" target="_blank">Run in Postman ↗</a> |
 | Collection JSON | [Appmax — Full Integration Suite.postman_collection.json](docs/postman/Appmax%20-%20Full%20Integration%20Suite.postman_collection.json) |
 
 The collection covers two top-level folders:
