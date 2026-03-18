@@ -214,7 +214,7 @@ Create a customer and order in Appmax.
     "last_name": "Doe",
     "email": "john@example.com",
     "phone": "11999999999",
-    "document_number": "12345678900",
+    "document_number": "52998224725",
     "ip": "192.168.1.1",
     "address": {
       "postcode": "01001000",
@@ -245,6 +245,10 @@ Create a customer and order in Appmax.
 }
 ```
 
+**Notes**:
+
+- `document_number` must be a valid CPF (11-digit Brazilian tax ID). Sequential or placeholder values (e.g., `12345678900`) are rejected by Appmax. Use a CPF that passes the verification algorithm (e.g., `52998224725`).
+
 **Controller**: `CheckoutController.CreateOrder`
 
 ---
@@ -267,7 +271,7 @@ and order from the `customer` and `order` fields first.
     "cvv": "123",
     "expiration_month": "12",
     "expiration_year": "2030",
-    "holder_document_number": "12345678900",
+    "holder_document_number": "52998224725",
     "holder_name": "JOHN DOE",
     "installments": 1,
     "soft_descriptor": "MYSTORE",
@@ -295,9 +299,11 @@ and order from the `customer` and `order` fields first.
 | 502    | Appmax error     | `{"message": "payment processing failed"}` |
 
 **Notes**:
+
 - `customer_id` and `order_id` are optional; if omitted, `customer` and `order` are required.
 - `subscription` is optional; include for recurring payments.
 - Provide `token` OR raw card fields, not both.
+- `holder_document_number` must be a valid CPF (11-digit Brazilian tax ID). Sequential or placeholder values (e.g., `12345678900`) are rejected by Appmax. Use a CPF that passes the verification algorithm (e.g., `52998224725`).
 
 **Controller**: `CheckoutController.PayCreditCard`
 
@@ -314,7 +320,7 @@ Process a Pix payment. Same customer/order auto-creation behavior as credit card
   "order_id": 67890,
   "customer": { "..." : "same as create order" },
   "order": { "..." : "same as create order" },
-  "document_number": "12345678900",
+  "document_number": "52998224725",
   "subscription": {
     "interval": "monthly",
     "interval_count": 1
@@ -331,6 +337,10 @@ Process a Pix payment. Same customer/order auto-creation behavior as credit card
 }
 ```
 
+**Notes**:
+
+- `document_number` must be a valid CPF (11-digit Brazilian tax ID). Sequential or placeholder values (e.g., `12345678900`) are rejected by Appmax. Use a CPF that passes the verification algorithm (e.g., `52998224725`).
+
 **Controller**: `CheckoutController.PayPix`
 
 ---
@@ -346,7 +356,7 @@ Process a Boleto payment. Same customer/order auto-creation behavior as credit c
   "order_id": 67890,
   "customer": { "..." : "same as create order" },
   "order": { "..." : "same as create order" },
-  "document_number": "12345678900"
+  "document_number": "52998224725"
 }
 ```
 
@@ -358,6 +368,10 @@ Process a Boleto payment. Same customer/order auto-creation behavior as credit c
   "digitavel": "12345.67890..."
 }
 ```
+
+**Notes**:
+
+- `document_number` must be a valid CPF (11-digit Brazilian tax ID). Sequential or placeholder values (e.g., `12345678900`) are rejected by Appmax. Use a CPF that passes the verification algorithm (e.g., `52998224725`).
 
 **Controller**: `CheckoutController.PayBoleto`
 

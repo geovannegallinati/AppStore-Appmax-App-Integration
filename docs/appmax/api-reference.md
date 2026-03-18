@@ -125,7 +125,7 @@ Create or update a customer. Returns the Appmax customer ID.
   "last_name": "Doe",
   "email": "john@example.com",
   "phone": "11999999999",
-  "document_number": "12345678900",
+  "document_number": "52998224725",
   "ip": "192.168.1.1",
   "address": {
     "postcode": "01001000",
@@ -161,6 +161,7 @@ Create or update a customer. Returns the Appmax customer ID.
 - `address`, `products`, and `tracking` are optional.
 - If the customer already exists (matched by email), it is updated.
 - The `data` field may be an empty array `[]` in some edge cases (our gateway handles this).
+- `document_number` must be a valid CPF (11-digit Brazilian tax ID). Appmax validates the CPF checksum — sequential or placeholder values (e.g., `12345678900`) are rejected. Use a CPF that passes the verification algorithm (e.g., `52998224725`).
 
 ---
 
@@ -230,7 +231,7 @@ Retrieve order details.
       "id": 12345,
       "name": "John Doe",
       "email": "john@example.com",
-      "document_number": "12345678900"
+      "document_number": "52998224725"
     },
     "payment": {
       "method": "credit_card",
@@ -268,7 +269,7 @@ Process a credit card payment.
       "cvv": "123",
       "expiration_month": "12",
       "expiration_year": "2030",
-      "holder_document_number": "12345678900",
+      "holder_document_number": "52998224725",
       "holder_name": "JOHN DOE",
       "installments": 1,
       "soft_descriptor": "MYSTORE"
@@ -301,6 +302,7 @@ Process a credit card payment.
 - `subscription` is optional; include for recurring payments.
 - Empty `pay_reference` indicates a declined payment.
 - `data` may be an empty array in error scenarios.
+- `holder_document_number` must be a valid CPF. See the customer creation note above.
 
 ---
 
@@ -316,7 +318,7 @@ Process a Pix payment.
   "order_id": 67890,
   "payment_data": {
     "pix": {
-      "document_number": "12345678900"
+      "document_number": "52998224725"
     },
     "subscription": {
       "interval": "monthly",
@@ -341,6 +343,7 @@ Process a Pix payment.
 **Notes**:
 - `subscription` is optional; include for recurring Pix payments.
 - Empty `pix_qrcode` may indicate the order already has a pending payment.
+- `document_number` must be a valid CPF. See the customer creation note above.
 
 ---
 
@@ -356,7 +359,7 @@ Process a Boleto payment.
   "order_id": 67890,
   "payment_data": {
     "boleto": {
-      "document_number": "12345678900"
+      "document_number": "52998224725"
     }
   }
 }
@@ -373,6 +376,10 @@ Process a Boleto payment.
   }
 }
 ```
+
+**Notes**:
+
+- `document_number` must be a valid CPF. See the customer creation note above.
 
 ---
 

@@ -20,6 +20,22 @@ and webhook processing for order status updates.
 
 ---
 
+## API Documentation
+
+[![Run in Postman](https://run.pstmn.io/button.svg)](https://www.postman.com/geovannegallinati/appmax-full-integration-suite/collection/52585908-1b3d2ef6-e083-456c-b4c1-fdc46a37f771?tab=overview)
+
+- [Documentation](https://www.postman.com/geovannegallinati/appmax-full-integration-suite/documentation/52585908-1b3d2ef6-e083-456c-b4c1-fdc46a37f771)
+- [Collection](https://www.postman.com/geovannegallinati/appmax-full-integration-suite/collection/52585908-1b3d2ef6-e083-456c-b4c1-fdc46a37f771?tab=overview)
+
+The collection covers two top-level folders:
+
+- **Appmax Endpoints** — calls the Appmax sandbox APIs directly (OAuth token, installation authorization, customers, orders, payments, webhooks)
+- **Localhost Endpoints** — calls the backend server at `localhost:8080` (install flow, merchant token sync, checkout, webhook simulation)
+
+Before running requests, set the required variables in the collection. See [Postman Variables](docs/postman/postman-variables.md) for the full variable reference.
+
+---
+
 ## Prerequisites
 
 Before you begin, you need three things: Docker, a ngrok account, and Appmax credentials. Follow each step below.

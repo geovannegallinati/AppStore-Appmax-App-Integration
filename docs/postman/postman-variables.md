@@ -4,7 +4,7 @@ This document describes all 36 variables in the **AppMax — Full Integration Su
 
 ---
 
-## 1. Você deve preencher manualmente
+## 1. Fill in Manually
 
 These variables are environment-specific and must be set before running any requests.
 
@@ -19,7 +19,7 @@ These variables are environment-specific and must be set before running any requ
 
 ---
 
-## 2. Pré-configurado pelo Postman — não remover
+## 2. Pre-configured by Postman — Do Not Remove
 
 These variables are hardcoded with stable sandbox infrastructure URLs and shared defaults. Do not delete or modify them unless the sandbox environment changes.
 
@@ -33,11 +33,11 @@ These variables are hardcoded with stable sandbox infrastructure URLs and shared
 
 ---
 
-## 3. Gerado automaticamente pelos scripts
+## 3. Generated Automatically by Scripts
 
 These variables are populated by pre-request and test scripts during request execution. Do not set them manually — they will be overwritten.
 
-### 3a. Instalação e autenticação
+### 3a. Installation and Authentication
 
 Set once at the beginning of each flow run.
 
@@ -52,7 +52,7 @@ Set once at the beginning of each flow run.
 | `MERCHANT_CLIENT_ID` | Localhost Step 5 — Sync Merchant Token (test) | Pulled from the local DB via the sync endpoint |
 | `MERCHANT_CLIENT_SECRET` | Localhost Step 5 — Sync Merchant Token (test) | Pulled from the local DB via the sync endpoint |
 
-### 3b. Fluxos de pagamento e pedidos
+### 3b. Payment Flows and Orders
 
 Set progressively as you run through the payment flows.
 
