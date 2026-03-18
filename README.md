@@ -262,7 +262,7 @@ These are pre-configured for local development with the Appmax sandbox environme
 | `APP_HOST` | `0.0.0.0` | Listen address inside Docker |
 | `APP_PORT` | `8080` | HTTP port |
 | `APP_URL` | `http://127.0.0.1` | Base URL (ngrok overrides this for public access) |
-| `APP_KEY` | *(empty)* | Auto-generated on first `make install` |
+| `APP_KEY` | *(empty)* | Auto-generated on first `install` |
 | `DB_HOST` | `127.0.0.1` | Database host (Docker overrides to container name) |
 | `DB_PORT` | `5432` | PostgreSQL port |
 | `DB_DATABASE` | `appmax_checkout` | Database name |
