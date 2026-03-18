@@ -237,10 +237,10 @@ The file is pre-configured with sensible defaults. You only need to fill in the 
 | Variable | What to Put | Where to Get It |
 |----------|------------|-----------------|
 | `NGROK_AUTHTOKEN` | Your ngrok auth token | [ngrok dashboard > Your Authtoken](https://dashboard.ngrok.com/get-started/your-authtoken) |
-| `APPMAX_CLIENT_ID` | Your app's OAuth client ID | Appmax AppStore dashboard |
-| `APPMAX_CLIENT_SECRET` | Your app's OAuth client secret | Appmax AppStore dashboard |
-| `APPMAX_APP_ID_UUID` | Your app's UUID | Appmax AppStore dashboard |
-| `APPMAX_APP_ID_NUMERIC` | Your app's numeric ID | Appmax AppStore dashboard |
+| `APPMAX_CLIENT_ID` | Your app's OAuth client ID | Credentials that Appmax send to you |
+| `APPMAX_CLIENT_SECRET` | Your app's OAuth client secret | Credentials that Appmax send to you |
+| `APPMAX_APP_ID_UUID` | Your app's UUID | Credentials that Appmax send to you |
+| `APPMAX_APP_ID_NUMERIC` | Your app's numeric ID | Credentials that Appmax send to you |
 
 **Variables you MAY want to change:**
 
