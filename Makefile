@@ -53,7 +53,7 @@ health:
 		fi; \
 		sleep 3; \
 	done; \
-	echo "Healthcheck failed after 30 attempts: $(HEALTH_URL)"; exit 1
+	echo "Healthcheck failed after 60 attempts: $(HEALTH_URL)"; exit 1
 
 validate: health
 	@echo "Validating endpoints..."

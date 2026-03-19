@@ -324,7 +324,7 @@ Quick grep patterns for common investigations:
 
 ```bash
 # All errors
-grep "Errorf\|ERROR" storage/logs/goravel.log
+grep "local\.error:" storage/logs/goravel.log
 
 # Health check debugging
 grep "\[install" storage/logs/goravel.log

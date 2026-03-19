@@ -354,7 +354,7 @@ docker compose up -d --build
 docker compose exec -T app ./tmp/server artisan migrate
 
 # 6. Run tests — executes INSIDE the "app" container
-docker compose exec -T app sh -c "go test ./..."
+docker compose exec -T app sh -lc 'PATH=/usr/local/go/bin:/go/bin:$PATH GOCACHE=/tmp/.gocache go test ./...'
 #    The -T flag disables pseudo-TTY allocation (required on Windows to avoid hanging)
 
 # 7. Verify the app is healthy — runs on your host
