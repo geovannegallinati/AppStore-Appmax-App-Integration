@@ -54,3 +54,21 @@ func TestLoadAppmaxConfigFromEnv_Success(t *testing.T) {
 	assert.Equal(t, "cid", cfg.AppClientID)
 	assert.Equal(t, "csecret", cfg.AppClientSecret)
 }
+
+func TestLoadAppPublicURLFromEnv_PrefersNgrokURL(t *testing.T) {
+	t.Setenv("APP_URL", "https://app.example.com")
+	t.Setenv("NGROK_URL", "https://tunnel.example.com/")
+
+	url := bootstrap.LoadAppPublicURLFromEnv()
+
+	assert.Equal(t, "https://tunnel.example.com", url)
+}
+
+func TestLoadAppPublicURLFromEnv_FallsBackToAppURL(t *testing.T) {
+	t.Setenv("APP_URL", "https://app.example.com/")
+	t.Setenv("NGROK_URL", "")
+
+	url := bootstrap.LoadAppPublicURLFromEnv()
+
+	assert.Equal(t, "https://app.example.com", url)
+}

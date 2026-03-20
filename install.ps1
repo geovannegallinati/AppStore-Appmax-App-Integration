@@ -2,7 +2,7 @@ param(
     [int]$AppPort = 0
 )
 
-$rootDir = Split-Path $PSScriptRoot -Parent
+$rootDir = if ($PSScriptRoot) { $PSScriptRoot } else { (Get-Location).Path }
 $envFile = Join-Path $rootDir ".env"
 $envExample = Join-Path $rootDir ".env.example"
 
@@ -39,7 +39,10 @@ if ($AppPort -eq 0) {
 
 $NgrokUrl        = $env:NGROK_URL
 $NgrokAuthtoken  = $env:NGROK_AUTHTOKEN
+$AppmaxClientId  = $env:APPMAX_CLIENT_ID
+$AppmaxClientSecret = $env:APPMAX_CLIENT_SECRET
 $AppmaxAppIdUUID = $env:APPMAX_APP_ID_UUID
+$AppmaxAppIdNumeric = $env:APPMAX_APP_ID_NUMERIC
 $BaseUrl    = "http://localhost:$AppPort"
 $HealthUrl  = "$BaseUrl/health"
 $ComposeFiles = @("-f", "docker-compose.yml")
@@ -64,10 +67,17 @@ function Test-Endpoints {
         return $false
     }
 
-    if (-not $AppmaxAppIdUUID) {
-        Write-Host "  [FAIL] APPMAX_APP_ID_UUID is empty."
-        Write-Host "  Set APPMAX_APP_ID_UUID in .env with your app's UUID from the Appmax AppStore."
-        return $false
+    $missingAppmaxVars = @()
+    if (-not $AppmaxClientId) { $missingAppmaxVars += "APPMAX_CLIENT_ID" }
+    if (-not $AppmaxClientSecret) { $missingAppmaxVars += "APPMAX_CLIENT_SECRET" }
+    if (-not $AppmaxAppIdUUID) { $missingAppmaxVars += "APPMAX_APP_ID_UUID" }
+    if (-not $AppmaxAppIdNumeric) { $missingAppmaxVars += "APPMAX_APP_ID_NUMERIC" }
+
+    foreach ($missingVar in $missingAppmaxVars) {
+        Write-Host "  [WARN] $missingVar is empty."
+    }
+    if ($missingAppmaxVars.Count -gt 0) {
+        Write-Host "  Appmax integration endpoints stay reachable, but install/auth flows remain partially unconfigured until these values are set in .env."
     }
 
     try {

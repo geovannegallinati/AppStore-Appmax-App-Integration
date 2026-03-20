@@ -320,17 +320,17 @@ cd AppStore-Appmax-App-Integration
 Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
 
 # Step 2: Unblock the install script (Windows marks cloned files as "remote")
-Unblock-File -Path .\scripts\install.ps1
+Unblock-File -Path .\install.ps1
 
 # Step 3: Run the install script
-.\scripts\install.ps1
+.\install.ps1
 ```
 
 **If you get "cannot be loaded because running scripts is disabled":**
 
 ```powershell
 # Bypass the execution policy for this run only
-powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
+powershell -ExecutionPolicy Bypass -File .\install.ps1
 ```
 
 **If the script fails or you prefer manual steps:**
@@ -484,8 +484,8 @@ This is invaluable for debugging what Appmax is sending to your app and what you
 
 | Problem | Cause | Fix |
 |---------|-------|-----|
-| `running scripts is disabled` | PowerShell execution policy blocks cloned scripts | Run `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned` then `Unblock-File -Path .\scripts\install.ps1` |
-| Script still blocked after RemoteSigned | Windows Zone.Identifier on cloned files | `Unblock-File -Path .\scripts\install.ps1` or run with `powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1` |
+| `running scripts is disabled` | PowerShell execution policy blocks cloned scripts | Run `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned` then `Unblock-File -Path .\install.ps1` |
+| Script still blocked after RemoteSigned | Windows Zone.Identifier on cloned files | `Unblock-File -Path .\install.ps1` or run with `powershell -ExecutionPolicy Bypass -File .\install.ps1` |
 | `make` not found | Windows doesn't ship GNU Make | Use the PowerShell script, or install Make via `choco install make` (Chocolatey) or `winget install GnuWin32.Make` |
 | `docker compose exec` hangs | TTY allocation issue on Windows | Always use `-T` flag: `docker compose exec -T app <command>` |
 | `.env` parsing errors | Windows Notepad adds `\r\n` line endings | Edit `.env` with VS Code, or configure git: `git config core.autocrlf input` and re-clone |
@@ -501,7 +501,7 @@ Most `docker compose` commands work natively in PowerShell without any extra too
 
 | Action | Unix/macOS | Windows (PowerShell) |
 |--------|-----------|----------------------|
-| Full install | `make install` | `.\scripts\install.ps1` |
+| Full install | `make install` | `.\install.ps1` |
 | Start containers | `make up` | `docker compose up -d --build` |
 | Stop containers | `make down` | `docker compose down -v --remove-orphans` |
 | Restart containers | `make restart` | `docker compose restart` |
@@ -509,7 +509,7 @@ Most `docker compose` commands work natively in PowerShell without any extra too
 | Run tests | `make test` | `docker compose exec -T app sh -lc 'PATH=/usr/local/go/bin:/go/bin:$PATH GOCACHE=/tmp/.gocache go test ./...'` |
 | Run migrations | `make migrate` | `docker compose exec -T app ./tmp/server artisan migrate` |
 | Wait for health check | `make health` | `Invoke-WebRequest -Uri http://localhost:8080/health -UseBasicParsing` |
-| Verify endpoints via ngrok | `make validate` | _(included in `.\scripts\install.ps1`)_ |
+| Verify endpoints via ngrok | `make validate` | _(included in `.\install.ps1`)_ |
 | Remove all containers + volumes | `make teardown` | `docker compose down -v --remove-orphans` |
 | Rename Go module path | `make rename-module NEW=<path>` | `.\scripts\rename-module.ps1 -NewPath <path>` |
 

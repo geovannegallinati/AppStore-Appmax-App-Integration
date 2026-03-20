@@ -126,7 +126,7 @@ all tunneled requests, replay them, and inspect headers/bodies.
 ### How `make validate` Works
 
 1. Waits for the app health check to pass
-2. Checks `NGROK_AUTHTOKEN` and `APPMAX_APP_ID_UUID` are set
+2. Requires `NGROK_AUTHTOKEN`; warns for each missing Appmax credential (`APPMAX_CLIENT_ID`, `APPMAX_CLIENT_SECRET`, `APPMAX_APP_ID_UUID`, `APPMAX_APP_ID_NUMERIC`)
 3. Queries ngrok's local API (`http://127.0.0.1:4040/api/tunnels`) to discover the active tunnel URL
 4. Verifies all 5 public endpoints respond through the tunnel:
    - `GET /` (frontend)
@@ -141,7 +141,7 @@ all tunneled requests, replay them, and inspect headers/bodies.
 
 | Script                    | Platform             | Purpose                                             |
 |---------------------------|----------------------|-----------------------------------------------------|
-| `scripts/install.ps1`     | Windows (PowerShell) | Full setup equivalent of `make install`             |
+| `install.ps1`             | Windows (PowerShell) | Full setup equivalent of `make install`             |
 | `scripts/rename-module.sh`| Unix                 | Renames the Go module path across all project files |
 
 ---
