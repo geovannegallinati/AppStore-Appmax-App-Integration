@@ -159,7 +159,7 @@ Because App Store changes are **not automatically replicated into the Appmax san
 
 1. Clone this repository and bootstrap it locally with only `NGROK_AUTHTOKEN` and `NGROK_URL`.
 2. Create the App Store application shell in Appmax.
-3. In `Meus aplicativos` > select the app > click `Desenvolver` on Appstore, copy the generated public URLs from your project terminal into Appmax on the first setup.
+3. In `Meus aplicativos` > select the app > click `Desenvolver` on Appstore, copy the generated public URLs from your project terminal and paste into Appmax on the first setup.
 4. Wait for Appmax to email the 4 app credentials.
 5. Fill `APPMAX_CLIENT_ID`, `APPMAX_CLIENT_SECRET`, `APPMAX_APP_ID_UUID`, and `APPMAX_APP_ID_NUMERIC`.
 6. Reinstall the project to activate the full Appmax installation flow.
