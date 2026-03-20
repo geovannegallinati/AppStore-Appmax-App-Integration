@@ -4,20 +4,24 @@ import (
 	"github.com/goravel/framework/contracts/route"
 	"github.com/goravel/framework/facades"
 
+	"github.com/geovannegallinati/AppStore-Appmax-App-Integration/app/http/controllers"
 	"github.com/geovannegallinati/AppStore-Appmax-App-Integration/app/http/middleware"
 	"github.com/geovannegallinati/AppStore-Appmax-App-Integration/bootstrap"
 )
 
 func Api() {
+	healthController := controllers.NewHealthController(bootstrap.LoadAppPublicURLFromEnv())
+
+	facades.Route().Static("public", "./public")
+	facades.Route().Get("/", healthController.RootFrontend)
+	facades.Route().Get("/health", healthController.Check)
+
 	deps, err := bootstrap.NewHTTPDependencies()
 	if err != nil {
-		facades.Log().Errorf("routes api: bootstrap http dependencies failed: %v", err)
+		facades.Log().Warningf("routes api: bootstrap http dependencies failed: %v; registered only core health routes", err)
 		return
 	}
 
-	facades.Route().Static("public", "./public")
-	facades.Route().Get("/", deps.HealthController.RootFrontend)
-	facades.Route().Get("/health", deps.HealthController.Check)
 	facades.Route().Get("/integrations/appmax/callback/install", deps.InstallController.CallbackGuide)
 	facades.Route().Post("/integrations/appmax/callback/install", deps.InstallController.Callback)
 

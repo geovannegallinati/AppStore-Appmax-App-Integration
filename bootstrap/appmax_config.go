@@ -39,12 +39,7 @@ func LoadAppmaxConfigFromEnv() (AppmaxConfig, error) {
 		adminURL = defaultAdminURL
 	}
 
-	appPublicURL := os.Getenv("NGROK_URL")
-	if strings.TrimSpace(appPublicURL) == "" {
-		appPublicURL = os.Getenv("APP_URL")
-	}
-	appPublicURL = strings.TrimSpace(appPublicURL)
-	appPublicURL = strings.TrimRight(appPublicURL, "/")
+	appPublicURL := LoadAppPublicURLFromEnv()
 
 	cfg := AppmaxConfig{
 		AuthURL:         authURL,
@@ -62,6 +57,15 @@ func LoadAppmaxConfigFromEnv() (AppmaxConfig, error) {
 	}
 
 	return cfg, nil
+}
+
+func LoadAppPublicURLFromEnv() string {
+	appPublicURL := os.Getenv("NGROK_URL")
+	if strings.TrimSpace(appPublicURL) == "" {
+		appPublicURL = os.Getenv("APP_URL")
+	}
+
+	return strings.TrimRight(strings.TrimSpace(appPublicURL), "/")
 }
 
 func (c AppmaxConfig) Validate() error {

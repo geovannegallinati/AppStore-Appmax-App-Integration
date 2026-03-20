@@ -24,7 +24,7 @@ make migrate
 docker compose exec app ./tmp/server artisan migrate
 ```
 
-Migrations run automatically during `make install`. The framework tracks executed
+Migrations run automatically during the full install command (`make install` on macOS/Linux or `.\install.ps1` on Windows PowerShell). The framework tracks executed
 migrations in the `migrations` table.
 
 ---
