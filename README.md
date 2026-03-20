@@ -157,9 +157,9 @@ As of **March 20, 2026**, the Appmax App Store flow requires you to define your 
 
 Because App Store changes are **not automatically replicated into the Appmax sandbox**, this repository recommends the following order:
 
-1. Create the App Store application shell in Appmax.
-2. Clone this repository and bootstrap it locally with only `NGROK_AUTHTOKEN` and `NGROK_URL`.
-3. Copy the generated public URLs into Appmax on the first setup.
+1. Clone this repository and bootstrap it locally with only `NGROK_AUTHTOKEN` and `NGROK_URL`.
+2. Copy the generated public URLs into Appmax on the first setup.
+3. Create the App Store application shell in Appmax.
 4. Wait for Appmax to email the 4 app credentials.
 5. Fill `APPMAX_CLIENT_ID`, `APPMAX_CLIENT_SECRET`, `APPMAX_APP_ID_UUID`, and `APPMAX_APP_ID_NUMERIC`.
 6. Reinstall the project to activate the full Appmax installation flow.
