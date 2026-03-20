@@ -8,14 +8,19 @@ This document describes all 36 variables in the **AppMax — Full Integration Su
 
 These variables are environment-specific and must be set before running any requests.
 
+Use them in two phases:
+
+1. **Initial bootstrap** — set `NGROK_URL` and `BASE_URL`; leave `APPMAX_*` blank until Appmax emails them.
+2. **Full Appmax flow** — after Appmax sends the credential email, fill `APPMAX_CLIENT_ID`, `APPMAX_CLIENT_SECRET`, `APPMAX_APP_ID_UUID`, and `APP_ID_NUMERIC`.
+
 | Variable | Mapped from `.env` | Notes |
 | --- | --- | --- |
 | `NGROK_URL` | `NGROK_URL` | Changes every ngrok session. Update whenever you restart ngrok. Include the `https://` scheme (e.g., `https://foo.ngrok-free.app`). The collection pre-request script adds `https://` automatically if the scheme is missing and strips trailing slashes. |
 | `BASE_URL` | `APP_HOST` + `APP_PORT` | Default `http://localhost:8080` — change only if the server runs on a different port. |
-| `APPMAX_CLIENT_ID` | `APPMAX_CLIENT_ID` | Provided by Appmax when the app is registered. |
-| `APPMAX_CLIENT_SECRET` | `APPMAX_CLIENT_SECRET` | Provided by Appmax when the app is registered. |
-| `APPMAX_APP_ID_UUID` | `APPMAX_APP_ID_UUID` | App UUID assigned by Appmax. |
-| `APP_ID_NUMERIC` | `APPMAX_APP_ID_NUMERIC` | App numeric ID assigned by Appmax. |
+| `APPMAX_CLIENT_ID` | `APPMAX_CLIENT_ID` | Leave blank until Appmax sends the credential email after the first URL registration. |
+| `APPMAX_CLIENT_SECRET` | `APPMAX_CLIENT_SECRET` | Leave blank until Appmax sends the credential email after the first URL registration. |
+| `APPMAX_APP_ID_UUID` | `APPMAX_APP_ID_UUID` | Leave blank until Appmax sends the credential email after the first URL registration. |
+| `APP_ID_NUMERIC` | `APPMAX_APP_ID_NUMERIC` | Leave blank until Appmax sends the credential email after the first URL registration. |
 
 ---
 

@@ -307,14 +307,18 @@ If retries are configured:
 
 ### How do I know if the app started successfully?
 
-If `routes api: bootstrap http dependencies failed` appears in the logs, the app
-failed to initialize. Common causes:
-- Missing required env vars (`APPMAX_CLIENT_ID`, `APPMAX_CLIENT_SECRET`,
-  `APPMAX_APP_ID_UUID`, `APPMAX_APP_ID_NUMERIC`, `APP_URL` or `NGROK_URL`)
+If `routes api: bootstrap http dependencies failed` appears in the logs, the Appmax
+bootstrap did not initialize fully.
+
+Common causes:
+- `APPMAX_CLIENT_ID`, `APPMAX_CLIENT_SECRET`, `APPMAX_APP_ID_UUID`, or `APPMAX_APP_ID_NUMERIC` are still blank during the first bootstrap phase
+- `APP_URL` and `NGROK_URL` are both empty
 - Database connection failure
 - Redis connection failure
 
-If this log does NOT appear, the app bootstrapped successfully.
+With the current startup behavior, that warning means the service may still be running in a
+limited mode with only the core health routes registered. Fill `APPMAX_*` and rerun the
+install/bootstrap command to activate the full Appmax routes.
 
 ---
 

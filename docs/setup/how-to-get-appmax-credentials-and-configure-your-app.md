@@ -1,6 +1,6 @@
 # How to Get Appmax Credentials and Configure Your App
 
-End-to-end guide to create an Appmax App Store application, configure installation URLs, and receive sandbox credentials.
+End-to-end guide to create an Appmax App Store application, bootstrap this repository to obtain the public URLs, and only then receive and apply the sandbox credentials.
 
 ---
 
@@ -14,6 +14,8 @@ End-to-end guide to create an Appmax App Store application, configure installati
 For daily development, prefer this repository docs first (they are aligned with this codebase and endpoint behavior).
 
 ---
+
+> As of **March 20, 2026**, App Store URL changes are not automatically replicated into the Appmax sandbox. That is why this repository recommends an initial bootstrap without `APPMAX_*`: you need the public URLs during the first App Store setup, and if those URLs change later you must contact `desenvolvimento@appmax.com.br` to replicate the update.
 
 ## 1. Create Your App Store Account
 
@@ -96,28 +98,51 @@ If `Desenvolver` does not appear after app creation, send an email to `desenvolv
 
 ---
 
-## 7. Fill Integration URLs (No Sensitive Domain Exposure)
+## 7. Bootstrap This Repository Before Appmax Sends Credentials
 
-In the `Desenvolver` modal, configure with your public application domain:
+Clone the repository and prepare the first local run:
 
-- `Host`: `https://<your-public-domain>/install/start`
-- `URL do sistema`: `https://<your-public-domain>/`
-- `URL de validação` (Callback URL): `https://<your-public-domain>/integrations/appmax/callback/install`
+1. Copy `.env.example` to `.env`.
+2. Set `NGROK_AUTHTOKEN`.
+3. Set `NGROK_URL` if you have a stable ngrok domain.
+4. Leave the Appmax credential fields blank on purpose:
 
-Example with placeholder:
+```env
+APPMAX_CLIENT_ID=
+APPMAX_CLIENT_SECRET=
+APPMAX_APP_ID_UUID=
+APPMAX_APP_ID_NUMERIC=
+```
 
-- `Host`: `https://example-public-domain.com/install/start`
-- `URL do sistema`: `https://example-public-domain.com/`
-- `URL de validação`: `https://example-public-domain.com/integrations/appmax/callback/install`
+5. Run `make install` (or `.\install.ps1` on Windows PowerShell).
 
-Important:
-
-- if callback URL is missing or incorrect, installation will not complete
-- ensure HTTPS and a reachable public domain (ngrok/static domain or production domain)
+The purpose of this first run is to obtain the public URLs that Appmax asks for during the first application setup.
 
 ---
 
-## 8. Wait for Appmax Validation and Credential Delivery
+## 8. Fill Integration URLs During the First App Store Setup
+
+After the first local bootstrap, copy the printed URLs into the `Desenvolver` modal:
+
+- `Host`: the printed **Install URL** (`https://<your-public-domain>/install/start`)
+- `URL do sistema`: the printed **Frontend URL** (`https://<your-public-domain>/`)
+- `URL de validação` (Callback URL): the printed **Callback URL** (`https://<your-public-domain>/integrations/appmax/callback/install`)
+
+Example using an ngrok domain:
+
+- `Host`: `https://sana-sagittate-hyperemotively.ngrok-free.dev/install/start`
+- `URL do sistema`: `https://sana-sagittate-hyperemotively.ngrok-free.dev/`
+- `URL de validação`: `https://sana-sagittate-hyperemotively.ngrok-free.dev/integrations/appmax/callback/install`
+
+Important:
+
+- if the callback URL is missing or incorrect, installation will not complete
+- ensure HTTPS and a reachable public domain (ngrok/static domain or production domain)
+- if these URLs change later, contact `desenvolvimento@appmax.com.br` to request replication of the update
+
+---
+
+## 9. Wait for Appmax Validation and Credential Delivery
 
 Even with all fields configured, development only starts after Appmax validation.
 
@@ -130,23 +155,24 @@ Appmax may validate:
 If approved, Appmax sends sandbox credentials to the company email:
 
 ```env
-APPMAX_CLIENT_ID=
-APPMAX_CLIENT_SECRET=
-APPMAX_APP_ID_UUID=
-APPMAX_APP_ID_NUMERIC=
+APPMAX_CLIENT_ID=...
+APPMAX_CLIENT_SECRET=...
+APPMAX_APP_ID_UUID=...
+APPMAX_APP_ID_NUMERIC=...
 ```
 
-Only after receiving these values should you finalize `.env` and run full local integration flow.
+Only after receiving these values should you finalize `.env` and activate the full local integration flow.
 
 ---
 
-## 9. Next Step in This Repository
+## 10. Fill the Credentials and Reinstall the Project
 
-After receiving credentials:
+After receiving the credential email:
 
-1. fill `.env` values
-2. follow [Local Development](./local-development.md)
-3. use integration docs from this repo:
+1. fill `.env` with the 4 Appmax values
+2. rerun `make install` (or `.\install.ps1` on Windows PowerShell)
+3. continue with the repository docs:
+   - [Local Development](./local-development.md)
    - [Architecture Guide](../integration/guide.md)
    - [Endpoints](../integration/endpoints.md)
    - [Frontend Pages](../integration/frontend.md)

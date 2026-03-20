@@ -151,18 +151,20 @@ To avoid this, claim a free static domain:
 
 ---
 
-### Step 3: Get Appmax AppStore Credentials
+### Step 3: Create the Appmax App Store Application
 
-The credentials provided by Appmax include 4 values for your app:
+As of **March 20, 2026**, the Appmax App Store flow requires you to define your public URLs during the first application setup, before Appmax emails your app credentials.
 
-| Credential | Format | Example |
-|-----------|--------|---------|
-| `APPMAX_CLIENT_ID` | OAuth client ID | `abc123` |
-| `APPMAX_CLIENT_SECRET` | OAuth client secret | `secret_xyz789` |
-| `APPMAX_APP_ID_UUID` | UUID format | `a1b2c3d4-e5f6-7890-abcd-ef1234567890` |
-| `APPMAX_APP_ID_NUMERIC` | Integer | `42` |
+Because App Store changes are **not automatically replicated into the Appmax sandbox**, this repository recommends the following order:
 
-> **Important**: These are two different identifiers for the same app. The UUID is used in the OAuth authorize flow (`/app/authorize`). The numeric ID is used in the health check POST callback from Appmax. Both are required.
+1. Create the App Store application shell in Appmax.
+2. Clone this repository and bootstrap it locally with only `NGROK_AUTHTOKEN` and `NGROK_URL`.
+3. Copy the generated public URLs into Appmax on the first setup.
+4. Wait for Appmax to email the 4 app credentials.
+5. Fill `APPMAX_CLIENT_ID`, `APPMAX_CLIENT_SECRET`, `APPMAX_APP_ID_UUID`, and `APPMAX_APP_ID_NUMERIC`.
+6. Reinstall the project to activate the full Appmax installation flow.
+
+If you change those URLs later, contact `desenvolvimento@appmax.com.br` and ask Appmax to replicate the update. Changing them only in your local environment is not enough.
 
 Quick process summary:
 
@@ -173,11 +175,11 @@ Quick process summary:
    - define name, description, billing model (`Cobrança via Appmax` or `Cobrança via Plataforma Externa`), and fee/commission terms according to Appmax rules
 4. Upload app icon with Appmax UI requirements (`1200x1200`, PNG/JPG, square, no rounded corners).
 5. Configure permissions for required events and save.
-6. Go to `Meus aplicativos` > select the app > click `Desenvolver` and configure:
-   - `Host`: `https://<your-public-domain>/install/start`
-   - `URL do sistema`: `https://<your-public-domain>/`
-   - `URL de validação` (callback): `https://<your-public-domain>/integrations/appmax/callback/install`
-7. If `Desenvolver` does not appear, request enablement at `desenvolvedores@appmax.com.br` (app may still be under analysis).
+6. After the first local bootstrap in this repository, go to `Meus aplicativos` > select the app > click `Desenvolver` and configure:
+   - `Host`: the printed **Install URL** (`https://<your-public-domain>/install/start`)
+   - `URL do sistema`: the printed **Frontend URL** (`https://<your-public-domain>/`)
+   - `URL de validação` (callback): the printed **Callback URL** (`https://<your-public-domain>/integrations/appmax/callback/install`)
+7. If `Desenvolver` does not appear, request enablement at `desenvolvedores@appmax.com.br` (the app may still be under analysis).
 8. Callback URL is mandatory. Without it, installation does not complete.
 9. Appmax still needs to validate company/CNPJ/shareholder structure and then sends sandbox credentials by email.
 
@@ -226,29 +228,36 @@ copy .env.example .env
 
 </details>
 
-### Step 3: Fill in the `.env` File
+### Step 3: Fill in the `.env` File for the First Bootstrap
 
 Open `.env` in any text editor (VS Code, nano, vim, Notepad++, etc.).
 
-The file is pre-configured with sensible defaults. You only need to fill in the blank values:
+The file is pre-configured with sensible defaults. For the **first bootstrap**, only ngrok needs to be configured.
 
-**Variables you MUST fill in:**
+**Fill in now:**
 
 | Variable | What to Put | Where to Get It |
 |----------|------------|-----------------|
 | `NGROK_AUTHTOKEN` | Your ngrok auth token | [ngrok dashboard > Your Authtoken](https://dashboard.ngrok.com/get-started/your-authtoken) |
-| `APPMAX_CLIENT_ID` | Your app's OAuth client ID | The credentials provided by Appmax |
-| `APPMAX_CLIENT_SECRET` | Your app's OAuth client secret | The credentials provided by Appmax |
-| `APPMAX_APP_ID_UUID` | Your app's UUID | The credentials provided by Appmax |
-| `APPMAX_APP_ID_NUMERIC` | Your app's numeric ID | The credentials provided by Appmax |
 
-**Variables you MAY want to change:**
+**Recommended to fill in now:**
 
 | Variable | Default | When to Change |
 |----------|---------|---------------|
-| `NGROK_URL` | *(empty)* | Set this to your static ngrok domain (e.g., `your-name.ngrok-free.app`) if you claimed one. Leave empty to use a random URL each time |
+| `NGROK_URL` | *(empty)* | Set this to your static ngrok domain (e.g., `your-name.ngrok-free.app`) if you claimed one. This is strongly recommended for the first Appmax registration, because later URL changes require Appmax-side replication |
 | `DB_PASSWORD` | `secret` | Change if you want a different local database password |
 | `REDIS_PASSWORD` | `redis-secret` | Change if you want a different local Redis password |
+
+**Leave blank on purpose during the first bootstrap:**
+
+```env
+APPMAX_CLIENT_ID=
+APPMAX_CLIENT_SECRET=
+APPMAX_APP_ID_UUID=
+APPMAX_APP_ID_NUMERIC=
+```
+
+You will fill those values only after Appmax emails the app credentials.
 
 **Variables you do NOT need to change:**
 
@@ -275,7 +284,7 @@ These are pre-configured for local development with the Appmax sandbox environme
 
 > **Switching to production**: Change the three `APPMAX_*_URL` variables to their production equivalents: `https://auth.appmax.com.br`, `https://api.appmax.com.br`, `https://admin.appmax.com.br`.
 
-### Step 4: Run the Project
+### Step 4: Run the Project Once to Generate the Public URLs
 
 <details>
 <summary><strong>macOS / Linux</strong></summary>
@@ -293,6 +302,8 @@ This single command does everything:
 5. **migrate** — Runs database migrations inside the app container
 6. **test** — Runs the full test suite inside the app container
 7. **validate** — Waits for the app to be healthy, checks that ngrok is tunneling correctly, and verifies all public endpoints are reachable
+
+For the first bootstrap, it is normal for Appmax credential warnings to appear because `APPMAX_*` is intentionally blank at this stage.
 
 When it finishes successfully, you see:
 
@@ -364,18 +375,9 @@ Invoke-WebRequest -Uri http://localhost:8080/health -UseBasicParsing
 
 </details>
 
-### Step 5: Verify Everything Works
+### Step 5: Register the Generated URLs in Appmax
 
-After `make install` (or the PowerShell equivalent) finishes:
-
-| What to Check | URL | Expected Result |
-|--------------|-----|----------------|
-| App is running | http://localhost:8080 | Frontend welcome page |
-| Health check | http://localhost:8080/health | Health status page |
-| ngrok inspector | http://localhost:4040 | ngrok web UI showing your public tunnel URL |
-| Public health check | `https://<your-ngrok-url>/health` | Same health page, accessible from the internet |
-
-The terminal output from `make install` also prints the public URLs:
+After `make install` (or the PowerShell equivalent) finishes, the terminal prints the public URLs:
 
 ```
 Frontend URL:  https://your-name.ngrok-free.app/
@@ -385,7 +387,59 @@ Callback URL:  https://your-name.ngrok-free.app/integrations/appmax/callback/ins
 Webhook URL:   https://your-name.ngrok-free.app/webhooks/appmax
 ```
 
-Use the **Install URL** as your app's callback URL in the Appmax AppStore configuration. Use the **Webhook URL** as your app's webhook endpoint.
+Use them in Appmax like this:
+
+- **Frontend URL** → `URL do sistema`
+- **Install URL** → `Host`
+- **Callback URL** → `URL de validação`
+
+Example:
+
+```
+Frontend URL: https://sana-sagittate-hyperemotively.ngrok-free.dev/
+Install URL: https://sana-sagittate-hyperemotively.ngrok-free.dev/install/start
+Callback URL: https://sana-sagittate-hyperemotively.ngrok-free.dev/integrations/appmax/callback/install
+```
+
+As of **March 20, 2026**, App Store URL changes are not automatically replicated into the Appmax sandbox. If you change them later, contact `desenvolvimento@appmax.com.br` and ask Appmax to replicate the update.
+
+### Step 6: Fill the Appmax Credentials After Appmax Emails Them
+
+Appmax sends 4 app-level values after validating the application:
+
+| Credential | Format | Example |
+|-----------|--------|---------|
+| `APPMAX_CLIENT_ID` | OAuth client ID | `abc123` |
+| `APPMAX_CLIENT_SECRET` | OAuth client secret | `secret_xyz789` |
+| `APPMAX_APP_ID_UUID` | UUID format | `a1b2c3d4-e5f6-7890-abcd-ef1234567890` |
+| `APPMAX_APP_ID_NUMERIC` | Integer | `42` |
+
+> **Important**: These are two different identifiers for the same app. The UUID is used in the OAuth authorize flow (`/app/authorize`). The numeric ID is used in the health check POST callback from Appmax. Both are required for the full Appmax installation flow.
+
+When Appmax sends those values, fill them in `.env` and reinstall the project:
+
+```bash
+make install
+```
+
+On Windows PowerShell:
+
+```powershell
+.\install.ps1
+```
+
+### Step 7: Verify Everything Works
+
+After reinstalling with the Appmax credentials filled in:
+
+| What to Check | URL | Expected Result |
+|--------------|-----|----------------|
+| App is running | http://localhost:8080 | Frontend welcome page |
+| Health check | http://localhost:8080/health | Health status page |
+| ngrok inspector | http://localhost:4040 | ngrok web UI showing your public tunnel URL |
+| Public health check | `https://<your-ngrok-url>/health` | Same health page, accessible from the internet |
+
+At this stage, the printed **Install URL** and **Callback URL** are not just registered in Appmax; they are also backed by the full Appmax credential configuration in your local `.env`.
 
 ---
 
@@ -405,7 +459,7 @@ ngrok is the most common source of setup issues. Here is how to diagnose and fix
    NGROK_AUTHTOKEN=2abc123def456ghi789
    ```
 2. Verify your token is valid at https://dashboard.ngrok.com/get-started/your-authtoken
-3. Restart: `docker compose up -d ngrok` (or `make install` to redo everything)
+3. Restart: `docker compose up -d ngrok` (or rerun the full install command: `make install` on macOS/Linux or `.\install.ps1` on Windows PowerShell)
 
 ### ngrok Starts but No Tunnel URL
 

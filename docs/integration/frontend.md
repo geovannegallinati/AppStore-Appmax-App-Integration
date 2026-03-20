@@ -126,6 +126,8 @@ No endpoints list, no tips, no scripts.
 
 ## Install Flow — Step by Step
 
+This section describes the **full Appmax installation flow after `APPMAX_*` has been filled in**. During the initial bootstrap described in the setup docs, the project is started first to obtain the public ngrok URLs for Appmax registration, not to complete the full Appmax install/auth flow yet.
+
 ### Step 1: User Opens Install Page
 
 **URL**: `/install/start` (browser)
