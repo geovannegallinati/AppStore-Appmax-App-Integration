@@ -4,6 +4,8 @@ Appmax AppStore integration built with Go, Goravel, PostgreSQL, and Redis. Handl
 merchant installation (OAuth + health check), checkout (credit card, Pix, boleto),
 and webhook processing for order status updates.
 
+Check the tutorial: https://www.youtube.com/watch?v=ZqKZe2_vhvc
+
 ---
 
 ## Tech Stack
