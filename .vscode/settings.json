@@ -1,9 +1,0 @@
-{
-  "go.toolsEnvVars": {
-    "GOCACHE": "${workspaceFolder}/.gocache"
-  },
-  "go.testFlags": [
-    "-count=1"
-  ],
-  "python.terminal.useEnvFile": false
-}
