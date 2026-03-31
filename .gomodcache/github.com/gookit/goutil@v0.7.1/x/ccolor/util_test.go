@@ -1,1 +1,0 @@
-package ccolor_test
